@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="720" viewBox="0 0 420 720">
+  <defs>
+    <pattern id="grid" width="90" height="39" patternUnits="userSpaceOnUse"><path d="M0 38.5H90M89.5 0V39" stroke="#F4C93B" stroke-opacity=".08"/></pattern>
+  </defs>
+  <rect width="420" height="720" fill="#1E3D2B"/>
+  <rect width="420" height="720" fill="url(#grid)"/>
+  <text x="20" y="30" fill="#F4C93B" fill-opacity=".09" font-family="Courier New, monospace" font-size="11" letter-spacing="3">HACKER HOUSE GOA 2026 BUILD SHIP LAUNCH</text>
+  <text x="20" y="43" fill="#F4C93B" fill-opacity=".09" font-family="Courier New, monospace" font-size="11" letter-spacing="3">GOA INDIA HACKER HOUSE GOA BUILD SHIP</text>
+  <text x="210" y="26" fill="#A8C9B0" font-family="Courier New, monospace" font-size="10" letter-spacing="2" text-anchor="middle">HACKER HOUSE GOA · BUILDER ID</text>
+  <g transform="translate(24 44)">
+    <rect width="146" height="35" rx="17.5" fill="#F4C93B"/>
+    <circle cx="21" cy="17.5" r="13" fill="#D94F8C"/>
+    <text x="21" y="22" fill="#fff" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="12">H</text>
+    <text x="42" y="15" fill="#1E3D2B" font-family="Courier New, monospace" font-size="10" font-weight="bold">2:47 PM Studio</text>
+    <text x="42" y="26" fill="#4A3F1A" font-family="Courier New, monospace" font-size="7" letter-spacing=".5">HACKER HOUSE GOA</text>
+  </g>
+  <g transform="translate(300 50)" fill="none">
+    <circle cx="130" cy="130" r="120" stroke="#F4C93B" stroke-width="18"/>
+    <circle cx="130" cy="130" r="80" stroke="#D94F8C" stroke-width="14"/>
+    <circle cx="130" cy="130" r="40" stroke="#F4C93B" stroke-width="10"/>
+  </g>
+  <g transform="translate(26 100)">
+    <text fill="#F4C93B" font-family="Impact, Arial Black, sans-serif" font-size="52" letter-spacing="1">HACKER</text>
+    <text y="48" fill="#F4C93B" font-family="Impact, Arial Black, sans-serif" font-size="52" letter-spacing="1">HOUSE</text>
+    <g transform="translate(0 58) rotate(-2)"><rect width="95" height="28" rx="6" fill="#D94F8C"/><text x="13" y="21" fill="#F4C93B" font-family="Impact, Arial Black, sans-serif" font-size="20" letter-spacing="2">गोवा</text></g>
+    <text y="108" fill="#F2EDE0" font-family="Courier New, monospace" font-size="14" font-weight="bold" letter-spacing="1">GOA, INDIA · 28–31 OCT 2026</text>
+    <path d="M0 116H277" stroke="#F4C93B" stroke-width="2"/>
+  </g>
+</svg>
