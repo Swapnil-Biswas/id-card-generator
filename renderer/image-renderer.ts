@@ -77,20 +77,56 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
     height = metadata.width;
   }
 
-  const zoom = Math.min(3, Math.max(1, transform?.zoom ?? 1));
-  const hasManualPosition = zoom > 1.01 || Math.abs(transform?.x ?? 0) > 0.01 || Math.abs(transform?.y ?? 0) > 0.01;
+  const zoom = Math.min(3, Math.max(0.3, transform?.zoom ?? 1));
+  const hasManualPosition = Math.abs(zoom - 1) > 0.01 || Math.abs(transform?.x ?? 0) > 0.01 || Math.abs(transform?.y ?? 0) > 0.01;
   let result: Buffer;
 
   if (!hasManualPosition) {
     result = await normalized.resize(box.width, box.height, { fit: "contain", position: "top", background: { r: 0, g: 0, b: 0, alpha: 0 }, kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 1 }).toBuffer();
   } else {
     const scale = Math.max(box.width / width, box.height / height) * zoom;
-    const scaledWidth = Math.max(box.width, Math.ceil(width * scale));
-    const scaledHeight = Math.max(box.height, Math.ceil(height * scale));
+    const scaledWidth = Math.ceil(width * scale);
+    const scaledHeight = Math.ceil(height * scale);
     const positioned = await normalized.resize(scaledWidth, scaledHeight, { fit: "fill", kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 1 }).toBuffer();
     const horizontal = Math.min(1, Math.max(0, 0.5 + (transform?.x ?? 0) / 2));
     const vertical = Math.min(1, Math.max(0, 0.5 + (transform?.y ?? 0) / 2));
-    result = await sharp(positioned).extract({ left: Math.round((scaledWidth - box.width) * horizontal), top: Math.round((scaledHeight - box.height) * vertical), width: box.width, height: box.height }).png({ compressionLevel: 1 }).toBuffer();
+
+    const extractWidth = Math.min(box.width, scaledWidth);
+    const extractHeight = Math.min(box.height, scaledHeight);
+    
+    let extractLeft = 0;
+    if (scaledWidth > box.width) {
+      extractLeft = Math.round((scaledWidth - box.width) * horizontal);
+    }
+    let extractTop = 0;
+    if (scaledHeight > box.height) {
+      extractTop = Math.round((scaledHeight - box.height) * vertical);
+    }
+
+    const cropped = await sharp(positioned)
+      .extract({ left: extractLeft, top: extractTop, width: extractWidth, height: extractHeight })
+      .toBuffer();
+
+    let compositeLeft = 0;
+    if (scaledWidth < box.width) {
+      compositeLeft = Math.round((box.width - scaledWidth) * horizontal);
+    }
+    let compositeTop = 0;
+    if (scaledHeight < box.height) {
+      compositeTop = Math.round((box.height - scaledHeight) * vertical);
+    }
+
+    result = await sharp({
+      create: {
+        width: box.width,
+        height: box.height,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 }
+      }
+    })
+    .composite([{ input: cropped, left: compositeLeft, top: compositeTop }])
+    .png({ compressionLevel: 1 })
+    .toBuffer();
   }
 
   const overlays: OverlayOptions[] = [];

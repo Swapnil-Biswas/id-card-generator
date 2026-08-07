@@ -498,7 +498,7 @@ export function Generator() {
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-3">
-                    <RangeControl label="Zoom" value={zoom} min={1} max={2.5} step={0.05} onChange={setZoom} />
+                    <RangeControl label="Zoom" value={zoom} min={0.3} max={2.5} step={0.05} onChange={setZoom} />
                     <RangeControl label="Horizontal" value={positionX} min={-1} max={1} step={0.05} onChange={setPositionX} />
                     <RangeControl label="Vertical" value={positionY} min={-1} max={1} step={0.05} onChange={setPositionY} />
                   </div>
