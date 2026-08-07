@@ -236,7 +236,7 @@ export function Generator() {
     data.set("zoom", String(zoom)); data.set("positionX", String(positionX)); data.set("positionY", String(positionY));
     const response = await generateImageAction(data);
     setIsGenerating(false);
-    if (!response.ok) { setNotice({ kind: "error", text: response.error }); return; }
+    if (!response.ok) { setNotice({ kind: "error", text: response.error ?? "Failed to generate ID card." }); return; }
     if (download) {
       const link = document.createElement("a");
       link.href = URL.createObjectURL(dataUrlToBlob(response.image));

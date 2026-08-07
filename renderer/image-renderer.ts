@@ -11,13 +11,25 @@ function roundedMask(box: Box & { radius: number }) {
   return Buffer.from(`<svg width="${box.width}" height="${box.height}" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" rx="${box.radius}" ry="${box.radius}" fill="#fff"/></svg>`);
 }
 
-async function prepareQrBuffer(url: string, box: Box) {
-  const qrPng = await QRCode.toBuffer(url, {
-    type: "png",
-    width: box.width - 8,
-    margin: 1,
-    color: { dark: "#062C1B", light: "#FFFFFF" },
-  });
+async function prepareQrBuffer(url: string, box: Box): Promise<Buffer> {
+  let qrPng: Buffer;
+  try {
+    qrPng = await QRCode.toBuffer(url, {
+      type: "png",
+      width: box.width - 8,
+      margin: 1,
+      errorCorrectionLevel: "M",
+      color: { dark: "#062C1B", light: "#FFFFFF" },
+    });
+  } catch {
+    qrPng = await QRCode.toBuffer(url, {
+      type: "png",
+      width: box.width - 8,
+      margin: 1,
+      errorCorrectionLevel: "L",
+      color: { dark: "#062C1B", light: "#FFFFFF" },
+    });
+  }
   const containerSvg = `<svg width="${box.width}" height="${box.height}" xmlns="http://www.w3.org/2000/svg">
     <rect width="100%" height="100%" rx="8" fill="#FFFFFF" stroke="#062C1B" stroke-width="2"/>
   </svg>`;

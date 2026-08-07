@@ -1,50 +1,42 @@
 "use server";
 
-process.env.FONTCONFIG_PATH = process.cwd();
-
 import { headers } from "next/headers";
+import { TemplateConfig } from "@/config/template";
 import { createCardId, saveCardRecord } from "@/lib/db";
 import { ImageRenderer } from "@/renderer/image-renderer";
-import type { GeneratorMode } from "@/renderer/types";
 import sharp from "sharp";
 
-export type GenerationResponse =
-  | {
-      ok: true;
-      image: string;
-      mimeType: "image/png" | "image/jpeg";
-      cardId?: string;
-      verifyUrl?: string;
-    }
-  | { ok: false; error: string };
+export interface GenerateActionResponse {
+  ok: boolean;
+  image: string;
+  cardId?: string;
+  verifyUrl?: string;
+  error?: string;
+}
 
-const acceptedTypes = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/heic",
-  "image/heif",
-  "image/avif",
-  "application/octet-stream",
-  "",
-]);
-
-export async function generateImageAction(formData: FormData): Promise<GenerationResponse> {
+export async function generateImageAction(formData: FormData): Promise<GenerateActionResponse> {
   try {
-    const photo = formData.get("photo");
-    if (!(photo instanceof File) || photo.size === 0) {
-      return { ok: false, error: "Choose a photo first." };
-    }
-    if (photo.size > 20 * 1024 * 1024) {
-      return { ok: false, error: "Please use a photo smaller than 20 MB." };
-    }
-    if (photo.type && !acceptedTypes.has(photo.type)) {
-      return { ok: false, error: "Use a JPG, PNG, WebP, HEIC, or AVIF photo." };
+    const mode = (formData.get("mode") ?? "card") as "frame" | "card";
+    const format = (formData.get("format") ?? "png") as "png" | "jpeg";
+    const photoFile = formData.get("photo") as File | null;
+
+    if (!photoFile) {
+      return { ok: false, image: "", error: "Choose a photo to continue." };
     }
 
-    const mode = (formData.get("mode") === "card" ? "card" : "frame") satisfies GeneratorMode;
-    const format = formData.get("format") === "jpeg" ? "jpeg" : "png";
-    const photoBuffer = Buffer.from(await photo.arrayBuffer());
+    const acceptedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+    if (!acceptedTypes.includes(photoFile.type.toLowerCase())) {
+      return { ok: false, image: "", error: "Unsupported image format. Please upload JPG, PNG, WEBP, or HEIC." };
+    }
+
+    const maxFileSize = 15 * 1024 * 1024; // 15MB
+    if (photoFile.size > maxFileSize) {
+      return { ok: false, image: "", error: "Photo file size too large. Maximum size is 15MB." };
+    }
+
+    const photoArrayBuffer = await photoFile.arrayBuffer();
+    const photoBuffer = Buffer.from(photoArrayBuffer);
+
     const name = String(formData.get("name") ?? "");
     const role = String(formData.get("role") ?? "");
     const title = String(formData.get("title") ?? "");
@@ -58,24 +50,19 @@ export async function generateImageAction(formData: FormData): Promise<Generatio
       const host = headerList.get("host") || "localhost:3005";
       const protocol = headerList.get("x-forwarded-proto") || "http";
 
-      let photoDataUrl: string | undefined = undefined;
-      try {
-        const resizedPhotoBuffer = await sharp(photoBuffer)
-          .rotate()
-          .resize(160, 160, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-          .webp({ quality: 50 })
-          .toBuffer();
-        photoDataUrl = `data:image/webp;base64,${resizedPhotoBuffer.toString("base64")}`;
-      } catch {
-        /* Ignore photo compression errors for token encoding */
-      }
-
-      cardId = createCardId(name, role, title, photoDataUrl);
+      cardId = createCardId(name, role, title);
       verifyUrl = `${protocol}://${host}/verify/${cardId}`;
 
       // Start saving to DB concurrently in background without blocking rendering
       dbSavePromise = (async () => {
         try {
+          const resizedPhotoBuffer = await sharp(photoBuffer)
+            .rotate()
+            .resize(200, 200, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+            .png({ compressionLevel: 3 })
+            .toBuffer();
+          const photoDataUrl = `data:image/png;base64,${resizedPhotoBuffer.toString("base64")}`;
+
           await saveCardRecord({
             id: cardId!,
             name: String(formData.get("name") ?? ""),
@@ -96,9 +83,9 @@ export async function generateImageAction(formData: FormData): Promise<Generatio
     const renderPromise = renderer.render({
       mode,
       photo: photoBuffer,
-      name: String(formData.get("name") ?? ""),
-      role: String(formData.get("role") ?? ""),
-      title: String(formData.get("title") ?? ""),
+      name,
+      role,
+      title,
       format,
       qrUrl: verifyUrl,
       transform: {
@@ -108,39 +95,45 @@ export async function generateImageAction(formData: FormData): Promise<Generatio
       },
     });
 
-    const [result] = await Promise.all([renderPromise, dbSavePromise]);
+    const [rendered] = await Promise.all([renderPromise, dbSavePromise]);
+    const base64 = rendered.buffer.toString("base64");
+    const mimeType = format === "jpeg" ? "image/jpeg" : "image/png";
 
     return {
       ok: true,
-      image: `data:${result.contentType};base64,${result.buffer.toString("base64")}`,
-      mimeType: result.contentType,
+      image: `data:${mimeType};base64,${base64}`,
       cardId,
       verifyUrl,
     };
   } catch (error) {
-    console.error("Image generation failed:", error);
     return {
       ok: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "We couldn't generate your image. Try a different photo or a smaller file.",
+      image: "",
+      error: error instanceof Error ? error.message : "Internal rendering error.",
     };
   }
 }
 
-export async function normalizePhotoForSegmentationAction(formData: FormData): Promise<GenerationResponse> {
+export async function normalizePhotoForSegmentationAction(formData: FormData): Promise<GenerateActionResponse> {
   try {
-    const photo = formData.get("photo");
-    if (!(photo instanceof File) || photo.size === 0) return { ok: false, error: "Choose a photo first." };
-    const converted = await sharp(Buffer.from(await photo.arrayBuffer()), { failOn: "none" })
+    const photoFile = formData.get("photo") as File | null;
+    if (!photoFile) {
+      return { ok: false, image: "", error: "Missing photo file." };
+    }
+    const photoBuffer = Buffer.from(await photoFile.arrayBuffer());
+    const normalizedJpeg = await sharp(photoBuffer, { failOn: "none", animated: false })
       .rotate()
-      .resize({ width: 1200, height: 1200, fit: "inside", withoutEnlargement: true, kernel: sharp.kernel.lanczos3 })
       .jpeg({ quality: 85 })
       .toBuffer();
-    return { ok: true, image: `data:image/jpeg;base64,${converted.toString("base64")}`, mimeType: "image/jpeg" };
+    return {
+      ok: true,
+      image: `data:image/jpeg;base64,${normalizedJpeg.toString("base64")}`,
+    };
   } catch (error) {
-    console.error("Photo normalization failed:", error);
-    return { ok: false, error: "We couldn't prepare that photo for background removal." };
+    return {
+      ok: false,
+      image: "",
+      error: error instanceof Error ? error.message : "Photo normalization failed.",
+    };
   }
 }
