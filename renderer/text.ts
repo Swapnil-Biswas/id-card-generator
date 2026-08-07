@@ -6,10 +6,10 @@ const escapeXml = (value: string) =>
 /** Calculates character width multiplier based on font family */
 function getCharWidthRatio(fontFamily: string, fontWeight?: number): number {
   const family = fontFamily.toLowerCase();
-  if (family.includes("impact")) return 0.52;
-  if (family.includes("black") || (fontWeight && fontWeight >= 800)) return 0.68;
-  if (family.includes("courier") || family.includes("mono")) return 0.60;
-  return 0.58;
+  if (family.includes("impact")) return 0.50;
+  if (family.includes("black") || (fontWeight && fontWeight >= 800)) return 0.62;
+  if (family.includes("courier") || family.includes("mono")) return 0.58;
+  return 0.56;
 }
 
 export function textSvg(value: string | undefined, config: TextConfig, fontData?: Buffer) {
@@ -21,22 +21,26 @@ export function textSvg(value: string | undefined, config: TextConfig, fontData?
   const minFontSize = config.minFontSize ?? 10;
   const maxLines = config.maxLines ?? 1;
 
+  const fontStack = fontData
+    ? "custom"
+    : `${config.fontFamily}, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif`;
+
+  const face = fontData && config.fontFile
+    ? `@font-face{font-family:custom;src:url(data:font/ttf;base64,${fontData.toString("base64")})}`
+    : "";
+
   if (maxLines === 1) {
     // Single line mode: shrink font size until the ENTIRE text fits inside config.width
     while (rawText.length * fontSize * charRatio > config.width && fontSize > minFontSize) {
       fontSize -= 1;
     }
-    const lineHeight = config.lineHeight ?? Math.round(fontSize * 1.18);
-    const firstBaseline = Math.max(fontSize, (config.height - fontSize) / 2 + fontSize * 0.85);
     const anchor = config.align === "left" ? "start" : config.align === "right" ? "end" : "middle";
     const x = config.align === "left" ? 0 : config.align === "right" ? config.width : config.width / 2;
-    const face = fontData && config.fontFile ? `@font-face{font-family:custom;src:url(data:font/ttf;base64,${fontData.toString("base64")})}` : "";
-    const family = fontData ? "custom" : config.fontFamily;
 
     return `<svg width="${config.width}" height="${config.height}" viewBox="0 0 ${config.width} ${config.height}" xmlns="http://www.w3.org/2000/svg">
       <style>${face}</style>
-      <text x="${x}" y="${firstBaseline}" text-anchor="${anchor}" fill="${config.color}" font-family="${family}" font-size="${fontSize}" font-weight="${config.fontWeight ?? 400}">
-        <tspan x="${x}">${escapeXml(rawText)}</tspan>
+      <text x="${x}" y="50%" dominant-baseline="central" text-anchor="${anchor}" fill="${config.color}" font-family="${fontStack}" font-size="${fontSize}" font-weight="${config.fontWeight ?? 800}">
+        ${escapeXml(rawText)}
       </text>
     </svg>`;
   }
@@ -65,16 +69,12 @@ export function textSvg(value: string | undefined, config: TextConfig, fontData?
   }
 
   const lineHeight = config.lineHeight ?? Math.round(fontSize * 1.18);
-  const usedHeight = lines.length * lineHeight;
-  const firstBaseline = Math.max(fontSize, (config.height - usedHeight) / 2 + fontSize * 0.85);
   const anchor = config.align === "left" ? "start" : config.align === "right" ? "end" : "middle";
   const x = config.align === "left" ? 0 : config.align === "right" ? config.width : config.width / 2;
-  const face = fontData && config.fontFile ? `@font-face{font-family:custom;src:url(data:font/ttf;base64,${fontData.toString("base64")})}` : "";
-  const family = fontData ? "custom" : config.fontFamily;
   const tspans = lines.map((line, index) => `<tspan x="${x}" dy="${index === 0 ? 0 : lineHeight}">${escapeXml(line)}</tspan>`).join("");
 
   return `<svg width="${config.width}" height="${config.height}" viewBox="0 0 ${config.width} ${config.height}" xmlns="http://www.w3.org/2000/svg">
     <style>${face}</style>
-    <text x="${x}" y="${firstBaseline}" text-anchor="${anchor}" fill="${config.color}" font-family="${family}" font-size="${fontSize}" font-weight="${config.fontWeight ?? 400}">${tspans}</text>
+    <text x="${x}" y="${fontSize}" text-anchor="${anchor}" fill="${config.color}" font-family="${fontStack}" font-size="${fontSize}" font-weight="${config.fontWeight ?? 800}">${tspans}</text>
   </svg>`;
 }

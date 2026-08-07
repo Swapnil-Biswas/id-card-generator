@@ -1,23 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="420" height="720" viewBox="0 0 420 720">
   <defs>
-    <clipPath id="bottom-strip">
-      <path d="M 0 535 L 420 520 L 420 720 L 0 720 Z"/>
+    <!-- Slanted Clip Path for Bottom Name Card Banner -->
+    <clipPath id="slanted-banner-clip">
+      <polygon points="-20,535 440,505 440,740 -20,740"/>
     </clipPath>
     <pattern id="lines" width="420" height="24" patternUnits="userSpaceOnUse">
       <path d="M 0 23.5 H 420" stroke="#062C1B" stroke-opacity="0.08"/>
     </pattern>
   </defs>
 
-  <!-- Bottom Gold Credential Banner -->
-  <g clip-path="url(#bottom-strip)">
-    <rect x="0" y="515" width="420" height="205" fill="#F4C93B"/>
-    <rect x="0" y="515" width="420" height="205" fill="url(#lines)"/>
-    
-    <!-- Top Border Line of Banner -->
-    <path d="M 0 535 L 420 520" stroke="#062C1B" stroke-width="3"/>
-    
-    <!-- Watermark Telemetry Background Text -->
-    <text x="18" y="548" fill="#062C1B" fill-opacity="0.12" font-family="'Space Mono', monospace" font-size="9" font-weight="700" letter-spacing="2">HACKER HOUSE GOA · BUILD SHIP LAUNCH · 2026</text>
-    <text x="18" y="560" fill="#062C1B" fill-opacity="0.1" font-family="'Space Mono', monospace" font-size="9" font-weight="700" letter-spacing="2">GOA INDIA · OFFICIAL BUILDER ID CARD</text>
+  <!-- Slanted Name Card Banner Group -->
+  <g clip-path="url(#slanted-banner-clip)">
+    <!-- Sun Gold Banner Fill -->
+    <rect x="-20" y="490" width="460" height="250" fill="#F4C93B"/>
+    <rect x="-20" y="490" width="460" height="250" fill="url(#lines)"/>
+
+    <!-- Dark Green Slanted Top Border Line (Reference Style) -->
+    <line x1="-20" y1="535" x2="440" y2="505" stroke="#062C1B" stroke-width="4"/>
+    <line x1="-20" y1="540" x2="440" y2="510" stroke="#062C1B" stroke-width="1.5" stroke-opacity="0.5"/>
+
+    <!-- Monospace Background Telemetry Watermark -->
+    <text x="18" y="546" fill="#062C1B" fill-opacity="0.15" font-family="'Space Mono', monospace" font-size="9" font-weight="700" letter-spacing="2">HACKER HOUSE GOA · BUILD SHIP LAUNCH · 2026</text>
+    <text x="18" y="558" fill="#062C1B" fill-opacity="0.12" font-family="'Space Mono', monospace" font-size="9" font-weight="700" letter-spacing="2">GOA INDIA · OFFICIAL BUILDER ID CARD</text>
   </g>
 </svg>

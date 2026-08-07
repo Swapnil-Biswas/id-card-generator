@@ -3,7 +3,7 @@
 process.env.FONTCONFIG_PATH = process.cwd();
 
 import { headers } from "next/headers";
-import { saveCardRecord } from "@/lib/db";
+import { createCardId, saveCardRecord } from "@/lib/db";
 import { ImageRenderer } from "@/renderer/image-renderer";
 import type { GeneratorMode } from "@/renderer/types";
 import sharp from "sharp";
@@ -45,6 +45,9 @@ export async function generateImageAction(formData: FormData): Promise<Generatio
     const mode = (formData.get("mode") === "card" ? "card" : "frame") satisfies GeneratorMode;
     const format = formData.get("format") === "jpeg" ? "jpeg" : "png";
     const photoBuffer = Buffer.from(await photo.arrayBuffer());
+    const name = String(formData.get("name") ?? "");
+    const role = String(formData.get("role") ?? "");
+    const title = String(formData.get("title") ?? "");
 
     let cardId: string | undefined = undefined;
     let verifyUrl: string | undefined = undefined;
@@ -54,7 +57,7 @@ export async function generateImageAction(formData: FormData): Promise<Generatio
       const headerList = await headers();
       const host = headerList.get("host") || "localhost:3005";
       const protocol = headerList.get("x-forwarded-proto") || "http";
-      cardId = `hh_${Math.random().toString(36).substring(2, 9)}${Date.now().toString(36)}`;
+      cardId = createCardId(name, role, title);
       verifyUrl = `${protocol}://${host}/verify/${cardId}`;
 
       // Start saving to DB concurrently in background without blocking rendering

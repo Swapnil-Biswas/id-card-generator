@@ -2,27 +2,39 @@ import type { Metadata } from "next";
 import { ArrowLeft, Calendar, ShieldCheck, Sparkles, User } from "lucide-react";
 import Link from "next/link";
 import { VerifyWalletCard } from "@/components/verify-wallet-card";
-import { getCardRecord } from "@/lib/db";
+import { getCardRecord, type CardRecord } from "@/lib/db";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { id } = await params;
-  const card = await getCardRecord(id);
-  if (!card) {
-    return { title: "ID Card Not Found | HH Goa 2026" };
+  try {
+    const { id } = await params;
+    const card = await getCardRecord(id);
+    if (!card) {
+      return { title: "ID Card Not Found | HH Goa 2026" };
+    }
+    return {
+      title: `${card.name || "Builder"} | Verified ID Card · HH Goa 2026`,
+      description: `Verified Builder ID Card for ${card.name || "Attendee"} (${card.role || "Builder"}). Verified across DB and Web3 blockchain.`,
+    };
+  } catch {
+    return { title: "Verified ID Card · HH Goa 2026" };
   }
-  return {
-    title: `${card.name || "Builder"} | Verified ID Card · HH Goa 2026`,
-    description: `Verified Builder ID Card for ${card.name || "Attendee"} (${card.role || "Builder"}). Verified across DB and Web3 blockchain.`,
-  };
 }
 
 export default async function VerifyPage({ params }: PageProps) {
-  const { id } = await params;
-  const card = await getCardRecord(id);
+  let id = "";
+  let card: CardRecord | null = null;
+
+  try {
+    const resolvedParams = await params;
+    id = resolvedParams.id;
+    card = await getCardRecord(id);
+  } catch (err) {
+    console.error("Verification page fetch error:", err);
+  }
 
   if (!card) {
     return (
@@ -34,7 +46,7 @@ export default async function VerifyPage({ params }: PageProps) {
           ID CARD NOT FOUND
         </h1>
         <p className="mt-2 font-mono text-xs text-[#8EB89B]">
-          The verification ID <code className="text-[#F4C93B]">{id}</code> was not found in our registry database.
+          The verification ID <code className="text-[#F4C93B]">{id || "unknown"}</code> was not found in our registry database.
         </p>
         <Link
           href="/"
@@ -46,13 +58,18 @@ export default async function VerifyPage({ params }: PageProps) {
     );
   }
 
-  const formattedDate = new Date(card.createdAt).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  let formattedDate = "Oct 28–31, 2026";
+  try {
+    formattedDate = new Date(card.createdAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    /* Fallback string */
+  }
 
   return (
     <div className="min-h-screen bg-goa-grid">
