@@ -240,10 +240,10 @@ export function VerifyWalletCard({ initialCard }: VerifyWalletCardProps) {
             <Button
               onClick={() => void handleConnectWallet(false)}
               disabled={isConnecting}
-              className="flex-1"
+              className="w-full sm:flex-1 h-auto py-3 px-4 text-xs font-bold font-mono uppercase tracking-wider leading-normal"
               size="lg"
             >
-              <Wallet className="h-4 w-4 mr-2" />
+              <Wallet className="h-4 w-4 mr-2 shrink-0" />
               {isConnecting ? "Connecting Wallet…" : "Connect Crypto Wallet"}
             </Button>
 
@@ -252,6 +252,7 @@ export function VerifyWalletCard({ initialCard }: VerifyWalletCardProps) {
               disabled={isConnecting}
               variant="outline"
               size="lg"
+              className="w-full sm:w-auto h-auto py-3 px-4 text-xs font-bold font-mono text-center shrink-0"
             >
               Simulate On-Chain Link
             </Button>

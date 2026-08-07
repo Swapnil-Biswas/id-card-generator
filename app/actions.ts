@@ -57,18 +57,25 @@ export async function generateImageAction(formData: FormData): Promise<Generatio
       const headerList = await headers();
       const host = headerList.get("host") || "localhost:3005";
       const protocol = headerList.get("x-forwarded-proto") || "http";
-      cardId = createCardId(name, role, title);
+
+      let photoDataUrl: string | undefined = undefined;
+      try {
+        const resizedPhotoBuffer = await sharp(photoBuffer)
+          .rotate()
+          .resize(160, 160, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+          .webp({ quality: 50 })
+          .toBuffer();
+        photoDataUrl = `data:image/webp;base64,${resizedPhotoBuffer.toString("base64")}`;
+      } catch {
+        /* Ignore photo compression errors for token encoding */
+      }
+
+      cardId = createCardId(name, role, title, photoDataUrl);
       verifyUrl = `${protocol}://${host}/verify/${cardId}`;
 
       // Start saving to DB concurrently in background without blocking rendering
       dbSavePromise = (async () => {
         try {
-          const resizedPhotoBuffer = await sharp(photoBuffer)
-            .rotate()
-            .resize(300, 300, { fit: "inside", withoutEnlargement: true })
-            .png({ compressionLevel: 3 })
-            .toBuffer();
-          const photoDataUrl = `data:image/png;base64,${resizedPhotoBuffer.toString("base64")}`;
           await saveCardRecord({
             id: cardId!,
             name: String(formData.get("name") ?? ""),

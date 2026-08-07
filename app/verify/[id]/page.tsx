@@ -135,9 +135,9 @@ export default async function VerifyPage({ params }: PageProps) {
                 <span className="text-[10px] font-bold text-[#8EB89B] uppercase tracking-wider block">
                   Card Registry ID
                 </span>
-                <span className="font-mono text-xs text-[#F4C93B] bg-[#062C1B] border border-[#175B3B] px-3 py-1.5 rounded-xl inline-block mt-1">
+                <div className="mt-1.5 max-w-full overflow-hidden rounded-xl border border-[#175B3B] bg-[#062C1B] p-3 font-mono text-[10px] sm:text-xs text-[#F4C93B] break-all select-all shadow-inner leading-relaxed">
                   {card.id}
-                </span>
+                </div>
               </div>
 
               <div className="flex items-center gap-2 text-[11px] text-[#8EB89B] pt-1">

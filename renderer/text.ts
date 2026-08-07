@@ -21,9 +21,12 @@ export function textSvg(value: string | undefined, config: TextConfig, fontData?
   const minFontSize = config.minFontSize ?? 10;
   const maxLines = config.maxLines ?? 1;
 
+  const isMono = config.fontFamily.toLowerCase().includes("courier") || config.fontFamily.toLowerCase().includes("mono");
   const fontStack = fontData
     ? "custom"
-    : `${config.fontFamily}, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif`;
+    : isMono
+    ? "Courier, monospace"
+    : "Arial, Helvetica, sans-serif";
 
   const face = fontData && config.fontFile
     ? `@font-face{font-family:custom;src:url(data:font/ttf;base64,${fontData.toString("base64")})}`

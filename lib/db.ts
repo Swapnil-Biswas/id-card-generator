@@ -32,11 +32,12 @@ const isVercel = Boolean(process.env.VERCEL || process.env.NEXT_RUNTIME === "edg
 const dbDir = isVercel ? os.tmpdir() : path.join(process.cwd(), "data");
 const dbPath = path.join(dbDir, "cards.json");
 
-export function createCardId(name: string, role: string, title: string): string {
+export function createCardId(name: string, role: string, title: string, photoDataUrl?: string): string {
   const payload = {
     n: name.trim() || "Builder",
     r: role.trim() || "Attendee",
     t: title.trim() || "HH Goa 2026",
+    p: photoDataUrl ? photoDataUrl.substring(0, 15000) : undefined,
     d: Date.now(),
   };
   const jsonStr = JSON.stringify(payload);
@@ -68,6 +69,7 @@ export function decodeCardIdToken(id: string): CardRecord | null {
       name: String(parsed.n ?? ""),
       role: String(parsed.r ?? ""),
       title: String(parsed.t ?? ""),
+      photoDataUrl: parsed.p ? String(parsed.p) : undefined,
       createdAt: new Date(parsed.d || Date.now()).toISOString(),
       verifiedInDb: true,
       blockchainVerified: false,
@@ -160,7 +162,7 @@ export async function getCardRecord(id: string): Promise<CardRecord | null> {
     return decoded;
   }
 
-  // 4. Universal Fallback for legacy/test IDs (e.g. hh_8h8g152msin8doe) so verification NEVER returns error!
+  // 4. Universal Fallback for legacy/test IDs so verification NEVER returns error!
   if (id.startsWith("hh_")) {
     const fallbackRecord: CardRecord = {
       id,
