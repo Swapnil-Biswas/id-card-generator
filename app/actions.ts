@@ -139,3 +139,56 @@ export async function normalizePhotoForSegmentationAction(formData: FormData): P
     };
   }
 }
+
+export async function removeBackgroundAction(formData: FormData): Promise<GenerateActionResponse> {
+  try {
+    const photoFile = formData.get("photo") as File | null;
+    if (!photoFile) {
+      return { ok: false, image: "", error: "Missing photo file." };
+    }
+
+    const apiKey = process.env.REMOVE_BG_API_KEY;
+    if (!apiKey) {
+      return { ok: false, image: "", error: "No Remove.bg API key configured in environment." };
+    }
+    const photoBuffer = Buffer.from(await photoFile.arrayBuffer());
+
+    const apiFormData = new FormData();
+    apiFormData.append("image_file_b64", photoBuffer.toString("base64"));
+    apiFormData.append("size", "auto");
+
+    const res = await fetch("https://api.remove.bg/v1.0/removebg", {
+      method: "POST",
+      headers: {
+        "X-Api-Key": apiKey,
+      },
+      body: apiFormData,
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("remove.bg API error:", res.status, errText);
+      try {
+        const json = JSON.parse(errText);
+        const errorMsg = json.errors?.[0]?.title ?? `Remove.bg API error (${res.status})`;
+        return { ok: false, image: "", error: errorMsg };
+      } catch {
+        return { ok: false, image: "", error: `Remove.bg API error (${res.status})` };
+      }
+    }
+
+    const resultBuffer = Buffer.from(await res.arrayBuffer());
+    return {
+      ok: true,
+      image: `data:image/png;base64,${resultBuffer.toString("base64")}`,
+    };
+  } catch (error) {
+    console.error("Background removal error:", error);
+    return {
+      ok: false,
+      image: "",
+      error: error instanceof Error ? error.message : "Background removal request failed.",
+    };
+  }
+}
+

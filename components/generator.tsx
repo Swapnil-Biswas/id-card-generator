@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { Results, SelfieSegmentation } from "@mediapipe/selfie_segmentation";
-import { generateImageAction, normalizePhotoForSegmentationAction } from "@/app/actions";
+import { generateImageAction, normalizePhotoForSegmentationAction, removeBackgroundAction } from "@/app/actions";
 import { ImageUploader } from "@/components/image-uploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,107 @@ function loadImage(file: Blob) {
   });
 }
 
+function smartColorBackgroundRemoval(inputCanvas: HTMLCanvasElement): HTMLCanvasElement {
+  const width = inputCanvas.width;
+  const height = inputCanvas.height;
+  const ctx = inputCanvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return inputCanvas;
+
+  const imgData = ctx.getImageData(0, 0, width, height);
+  const data = imgData.data;
+
+  const edgeSamples: [number, number, number][] = [];
+  const sampleStep = Math.max(1, Math.floor(Math.min(width, height) / 35));
+
+  for (let x = 0; x < width; x += sampleStep) {
+    const idx0 = x * 4;
+    edgeSamples.push([data[idx0], data[idx0 + 1], data[idx0 + 2]]);
+    const idx1 = (width + x) * 4;
+    edgeSamples.push([data[idx1], data[idx1 + 1], data[idx1 + 2]]);
+  }
+  for (let y = 0; y < height * 0.6; y += sampleStep) {
+    const idxL = (y * width) * 4;
+    edgeSamples.push([data[idxL], data[idxL + 1], data[idxL + 2]]);
+    const idxR = (y * width + (width - 1)) * 4;
+    edgeSamples.push([data[idxR], data[idxR + 1], data[idxR + 2]]);
+  }
+
+  if (edgeSamples.length === 0) return inputCanvas;
+
+  const tolerance = 48;
+
+  function isEdgeColor(r: number, g: number, b: number): boolean {
+    for (const [er, eg, eb] of edgeSamples) {
+      const dr = r - er;
+      const dg = g - eg;
+      const db = b - eb;
+      if (dr * dr + dg * dg + db * db < tolerance * tolerance) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  const visited = new Uint8Array(width * height);
+  const queue: number[] = [];
+
+  for (let x = 0; x < width; x++) {
+    const idx = x;
+    const r = data[idx * 4], g = data[idx * 4 + 1], b = data[idx * 4 + 2];
+    if (isEdgeColor(r, g, b)) {
+      visited[idx] = 1;
+      queue.push(idx);
+    }
+  }
+  for (let y = 1; y < height; y++) {
+    const idxL = y * width;
+    const rL = data[idxL * 4], gL = data[idxL * 4 + 1], bL = data[idxL * 4 + 2];
+    if (isEdgeColor(rL, gL, bL)) {
+      visited[idxL] = 1;
+      queue.push(idxL);
+    }
+    const idxR = y * width + (width - 1);
+    const rR = data[idxR * 4], gR = data[idxR * 4 + 1], bR = data[idxR * 4 + 2];
+    if (isEdgeColor(rR, gR, bR)) {
+      visited[idxR] = 1;
+      queue.push(idxR);
+    }
+  }
+
+  let head = 0;
+  while (head < queue.length) {
+    const curr = queue[head++];
+    const cx = curr % width;
+    const cy = Math.floor(curr / width);
+
+    data[curr * 4 + 3] = 0;
+
+    const neighbors = [];
+    if (cy > 0) neighbors.push(curr - width);
+    if (cy < height - 1) neighbors.push(curr + width);
+    if (cx > 0) neighbors.push(curr - 1);
+    if (cx < width - 1) neighbors.push(curr + 1);
+
+    for (const n of neighbors) {
+      if (!visited[n]) {
+        visited[n] = 1;
+        const nr = data[n * 4], ng = data[n * 4 + 1], nb = data[n * 4 + 2];
+        if (isEdgeColor(nr, ng, nb)) {
+          queue.push(n);
+        }
+      }
+    }
+  }
+
+  const outCanvas = document.createElement("canvas");
+  outCanvas.width = width;
+  outCanvas.height = height;
+  const outCtx = outCanvas.getContext("2d");
+  outCtx?.putImageData(imgData, 0, 0);
+
+  return outCanvas;
+}
+
 async function createPortraitCutout(file: File) {
   const image = await loadImage(file);
   const scale = Math.min(1, 1280 / Math.max(image.naturalWidth, image.naturalHeight));
@@ -57,21 +158,62 @@ async function createPortraitCutout(file: File) {
   const height = Math.max(1, Math.round(image.naturalHeight * scale));
   const input = document.createElement("canvas");
   input.width = width; input.height = height;
-  input.getContext("2d")?.drawImage(image, 0, 0, width, height);
-  const segmenter = await getSegmenter();
-  const result = await new Promise<Results>((resolve, reject) => {
-    const timeout = window.setTimeout(() => reject(new Error("Portrait detection timed out.")), 8000);
-    segmenter.onResults((segmentation) => { window.clearTimeout(timeout); resolve(segmentation); });
-    void segmenter.send({ image: input }).catch((error) => { window.clearTimeout(timeout); reject(error); });
-  });
-  const output = document.createElement("canvas");
-  output.width = width; output.height = height;
-  const context = output.getContext("2d");
-  if (!context) throw new Error("Your browser cannot prepare this photo.");
-  context.drawImage(result.image, 0, 0, width, height);
-  context.globalCompositeOperation = "destination-in";
-  context.drawImage(result.segmentationMask, 0, 0, width, height);
-  return new Promise<Blob>((resolve, reject) => output.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Portrait cutout failed.")), "image/png"));
+  const inputCtx = input.getContext("2d", { willReadFrequently: true });
+  inputCtx?.drawImage(image, 0, 0, width, height);
+
+  let outputCanvas: HTMLCanvasElement | null = null;
+
+  try {
+    const segmenter = await getSegmenter();
+    const result = await new Promise<Results>((resolve, reject) => {
+      const timeout = window.setTimeout(() => reject(new Error("Portrait detection timed out.")), 6000);
+      segmenter.onResults((segmentation) => { window.clearTimeout(timeout); resolve(segmentation); });
+      void segmenter.send({ image: input }).catch((error) => { window.clearTimeout(timeout); reject(error); });
+    });
+
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = width; tempCanvas.height = height;
+    const tempCtx = tempCanvas.getContext("2d", { willReadFrequently: true });
+
+    if (tempCtx && inputCtx) {
+      tempCtx.drawImage(result.image, 0, 0, width, height);
+      const imgData = tempCtx.getImageData(0, 0, width, height);
+
+      const maskCanvas = document.createElement("canvas");
+      maskCanvas.width = width; maskCanvas.height = height;
+      const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
+
+      if (maskCtx) {
+        maskCtx.drawImage(result.segmentationMask, 0, 0, width, height);
+        const maskData = maskCtx.getImageData(0, 0, width, height).data;
+
+        let personPixels = 0;
+        const totalPixels = width * height;
+
+        for (let i = 0; i < imgData.data.length; i += 4) {
+          const maskAlpha = maskData[i];
+          imgData.data[i + 3] = maskAlpha;
+          if (maskAlpha > 120) personPixels++;
+        }
+
+        const personRatio = personPixels / totalPixels;
+        if (personRatio > 0.02 && personRatio < 0.95) {
+          tempCtx.putImageData(imgData, 0, 0);
+          outputCanvas = tempCanvas;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("MediaPipe segmentation skipped/failed:", err);
+  }
+
+  if (!outputCanvas) {
+    outputCanvas = smartColorBackgroundRemoval(input);
+  }
+
+  return new Promise<Blob>((resolve, reject) =>
+    outputCanvas!.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Portrait cutout failed."))), "image/png")
+  );
 }
 
 export function Generator() {
@@ -198,26 +340,32 @@ export function Generator() {
     removalRequest.current = requestId;
     setHasAttemptedRemoval(true);
     setIsRemovingBackground(true);
-    setRemovalProgress("Preparing photo cutout…");
+    setRemovalProgress("Removing background via Remove.bg…");
     try {
-      setRemovalProgress("Creating clean cutout…");
-      let segmentationSource = sourcePhoto;
-      if (sourcePhoto.type === "image/heic" || sourcePhoto.type === "image/heif") {
-        const payload = new FormData();
-        payload.set("photo", sourcePhoto);
-        const response = await normalizePhotoForSegmentationAction(payload);
-        if (!response.ok) throw new Error(response.error);
-        segmentationSource = new File([dataUrlToBlob(response.image)], "portrait.jpg", { type: "image/jpeg" });
-      }
-      const transparentImage = await createPortraitCutout(segmentationSource);
+      const payload = new FormData();
+      payload.set("photo", sourcePhoto);
+      const response = await removeBackgroundAction(payload);
       if (requestId !== removalRequest.current) return;
-      const cutout = new File([transparentImage], `${sourcePhoto.name.replace(/\.[^/.]+$/, "")}-cutout.png`, { type: "image/png" });
+
+      let cutoutBlob: Blob;
+      if (response.ok && response.image) {
+        cutoutBlob = dataUrlToBlob(response.image);
+      } else {
+        console.warn("Remove.bg API failed, using fallback segmentation:", response.error);
+        setRemovalProgress("Preparing cutout…");
+        cutoutBlob = await createPortraitCutout(sourcePhoto);
+        if (requestId !== removalRequest.current) return;
+      }
+
+      const cutout = new File([cutoutBlob], `${sourcePhoto.name.replace(/\.[^/.]+$/, "")}-cutout.png`, { type: "image/png" });
       if (foregroundPreviewUrl) URL.revokeObjectURL(foregroundPreviewUrl);
       setForegroundPhoto(cutout);
       setForegroundPreviewUrl(URL.createObjectURL(cutout));
       setRemovalProgress(null);
     } catch (error) {
-      if (requestId === removalRequest.current) setNotice({ kind: "error", text: error instanceof Error ? "Background removal failed. Try a clear, well-lit portrait photo." : "Background removal failed." });
+      if (requestId === removalRequest.current) {
+        console.warn("Background removal process failed:", error);
+      }
     } finally {
       if (requestId === removalRequest.current) setIsRemovingBackground(false);
     }
@@ -226,12 +374,12 @@ export function Generator() {
   async function render(format: "png" | "jpeg" = "png", download = false) {
     if (!photo) { setNotice({ kind: "error", text: "Choose a photo to continue." }); return; }
     if (mode === "card" && isRemovingBackground) { setNotice({ kind: "error", text: "Your photo cutout is still being prepared." }); return; }
-    if (mode === "card" && !foregroundPhoto) { setNotice({ kind: "error", text: "A photo cutout is required before creating the card." }); return; }
     const values = getValues();
     if (mode === "card" && !values.name.trim()) { setNotice({ kind: "error", text: "Enter your name for the ID card." }); return; }
     setIsGenerating(true); setNotice(null);
+    const photoToUse = (mode === "card" && foregroundPhoto) ? foregroundPhoto : photo;
     const data = new FormData();
-    data.set("photo", mode === "card" ? foregroundPhoto as File : photo); data.set("mode", mode); data.set("format", format);
+    data.set("photo", photoToUse); data.set("mode", mode); data.set("format", format);
     data.set("name", values.name); data.set("role", values.role); data.set("title", values.title);
     data.set("zoom", String(zoom)); data.set("positionX", String(positionX)); data.set("positionY", String(positionY));
     const response = await generateImageAction(data);
@@ -325,7 +473,7 @@ export function Generator() {
                 <ImageUploader file={photo} previewUrl={previewUrl} onChange={changePhoto} />
                 {mode === "card" && photo && (
                   <p className="mt-2 text-xs font-mono text-[#8EB89B]">
-                    {isRemovingBackground ? removalProgress ?? "Extracting photo background…" : foregroundPhoto ? "✅ Background removed — cutout ready!" : "Processing portrait cutout…"}
+                    {isRemovingBackground ? removalProgress ?? "Extracting photo background…" : foregroundPhoto ? "✅ Background removed — cutout ready!" : "Ready — photo loaded!"}
                   </p>
                 )}
               </div>
@@ -402,11 +550,10 @@ export function Generator() {
               {notice && (
                 <p
                   role="status"
-                  className={`rounded-2xl p-3.5 text-xs font-mono border ${
-                    notice.kind === "error"
-                      ? "bg-red-500/15 border-red-500/30 text-red-400"
-                      : "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
-                  }`}
+                  className={`rounded-2xl p-3.5 text-xs font-mono border ${notice.kind === "error"
+                    ? "bg-red-500/15 border-red-500/30 text-red-400"
+                    : "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                    }`}
                 >
                   {notice.text}
                 </p>
@@ -433,9 +580,8 @@ export function Generator() {
 
               {/* Canvas Preview Container */}
               <div
-                className={`relative overflow-hidden rounded-2xl border border-[#F4C93B]/30 bg-[#062C1B] shadow-inner ${
-                  mode === "card" ? "aspect-[7/12]" : "aspect-[4/5]"
-                }`}
+                className={`relative overflow-hidden rounded-2xl border border-[#F4C93B]/30 bg-[#062C1B] shadow-inner ${mode === "card" ? "aspect-[7/12]" : "aspect-[4/5]"
+                  }`}
               >
                 {generatedImage ? (
                   <div className="relative h-full w-full">
