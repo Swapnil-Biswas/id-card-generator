@@ -461,7 +461,7 @@ export function Generator() {
                         <img
                           src={foregroundPreviewUrl ?? previewUrl}
                           alt="Photo cutout preview"
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-contain object-top"
                           style={transformStyle}
                         />
                       </div>
@@ -478,7 +478,7 @@ export function Generator() {
                     <div className="absolute inset-0 pointer-events-none [container-type:size]">
                       {watchName && (
                         <div
-                          className="absolute font-black whitespace-nowrap overflow-hidden text-ellipsis"
+                          className="absolute font-black whitespace-nowrap overflow-visible flex items-center"
                           style={{
                             left: `${(TemplateConfig.name.x / 420) * 100}%`,
                             top: `${(TemplateConfig.name.y / 720) * 100}%`,
@@ -495,7 +495,7 @@ export function Generator() {
                       )}
                       {watchRole && (
                         <div
-                          className="absolute font-bold whitespace-nowrap overflow-hidden text-ellipsis"
+                          className="absolute font-bold whitespace-nowrap overflow-visible flex items-center"
                           style={{
                             left: `${(TemplateConfig.role.x / 420) * 100}%`,
                             top: `${(TemplateConfig.role.y / 720) * 100}%`,
@@ -512,7 +512,7 @@ export function Generator() {
                       )}
                       {watchTitle && (
                         <div
-                          className="absolute font-bold whitespace-nowrap overflow-hidden text-ellipsis"
+                          className="absolute font-bold whitespace-nowrap overflow-visible flex items-center"
                           style={{
                             left: `${(TemplateConfig.title.x / 420) * 100}%`,
                             top: `${(TemplateConfig.title.y / 720) * 100}%`,

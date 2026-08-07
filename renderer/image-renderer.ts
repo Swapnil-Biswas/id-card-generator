@@ -48,7 +48,7 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
   let result: Buffer;
 
   if (!hasManualPosition) {
-    result = await normalized.resize(box.width, box.height, { fit: "cover", position: "attention", kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 3 }).toBuffer();
+    result = await normalized.resize(box.width, box.height, { fit: "contain", position: "top", background: { r: 0, g: 0, b: 0, alpha: 0 }, kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 3 }).toBuffer();
   } else {
     const scale = Math.max(box.width / width, box.height / height) * zoom;
     const scaledWidth = Math.max(box.width, Math.ceil(width * scale));
