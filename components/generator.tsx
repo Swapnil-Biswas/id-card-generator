@@ -611,7 +611,7 @@ export function Generator() {
                         <img
                           src={foregroundPreviewUrl ?? previewUrl}
                           alt="Photo cutout preview"
-                          className="h-full w-full object-cover object-top"
+                          className="h-full w-full object-cover object-center"
                           style={transformStyle}
                         />
                       </div>

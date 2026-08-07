@@ -82,39 +82,36 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
   let result: Buffer;
 
   if (!hasManualPosition) {
-    result = await normalized.resize(box.width, box.height, { fit: "contain", position: "top", background: { r: 0, g: 0, b: 0, alpha: 0 }, kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 1 }).toBuffer();
+    result = await normalized.resize(box.width, box.height, { fit: "cover", position: "center", background: { r: 0, g: 0, b: 0, alpha: 0 }, kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 1 }).toBuffer();
   } else {
     const scale = Math.max(box.width / width, box.height / height) * zoom;
     const scaledWidth = Math.ceil(width * scale);
     const scaledHeight = Math.ceil(height * scale);
     const positioned = await normalized.resize(scaledWidth, scaledHeight, { fit: "fill", kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 1 }).toBuffer();
-    const horizontal = Math.min(1, Math.max(0, 0.5 + (transform?.x ?? 0) / 2));
-    const vertical = Math.min(1, Math.max(0, 0.5 + (transform?.y ?? 0) / 2));
+    const transformX = transform?.x ?? 0;
+    const transformY = transform?.y ?? 0;
 
-    const extractWidth = Math.min(box.width, scaledWidth);
-    const extractHeight = Math.min(box.height, scaledHeight);
-    
-    let extractLeft = 0;
-    if (scaledWidth > box.width) {
-      extractLeft = Math.round((scaledWidth - box.width) * horizontal);
-    }
-    let extractTop = 0;
-    if (scaledHeight > box.height) {
-      extractTop = Math.round((scaledHeight - box.height) * vertical);
-    }
+    const maxDeltaX = Math.abs(box.width - scaledWidth) / 2;
+    const maxDeltaY = Math.abs(box.height - scaledHeight) / 2;
+    const shiftX = (box.width - scaledWidth) / 2 + maxDeltaX * transformX;
+    const shiftY = (box.height - scaledHeight) / 2 + maxDeltaY * transformY;
+
+    const srcLeft = Math.max(0, -shiftX);
+    const srcTop = Math.max(0, -shiftY);
+    const cropWidth = Math.min(scaledWidth - srcLeft, box.width - Math.max(0, shiftX));
+    const cropHeight = Math.min(scaledHeight - srcTop, box.height - Math.max(0, shiftY));
 
     const cropped = await sharp(positioned)
-      .extract({ left: extractLeft, top: extractTop, width: extractWidth, height: extractHeight })
+      .extract({
+        left: Math.round(srcLeft),
+        top: Math.round(srcTop),
+        width: Math.round(cropWidth),
+        height: Math.round(cropHeight)
+      })
       .toBuffer();
 
-    let compositeLeft = 0;
-    if (scaledWidth < box.width) {
-      compositeLeft = Math.round((box.width - scaledWidth) * horizontal);
-    }
-    let compositeTop = 0;
-    if (scaledHeight < box.height) {
-      compositeTop = Math.round((box.height - scaledHeight) * vertical);
-    }
+    const compositeLeft = Math.max(0, shiftX);
+    const compositeTop = Math.max(0, shiftY);
 
     result = await sharp({
       create: {
@@ -124,7 +121,7 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
         background: { r: 0, g: 0, b: 0, alpha: 0 }
       }
     })
-    .composite([{ input: cropped, left: compositeLeft, top: compositeTop }])
+    .composite([{ input: cropped, left: Math.round(compositeLeft), top: Math.round(compositeTop) }])
     .png({ compressionLevel: 1 })
     .toBuffer();
   }
