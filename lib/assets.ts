@@ -6,7 +6,8 @@ const assetCache = new Map<string, Buffer>();
 
 export async function loadOptionalAsset(fileName: string): Promise<Buffer | undefined> {
   if (!fileName) return undefined;
-  if (assetCache.has(fileName)) {
+  
+  if (process.env.NODE_ENV === "production" && assetCache.has(fileName)) {
     return assetCache.get(fileName);
   }
 

@@ -8,9 +8,8 @@
       <path d="M 0 19.5 H 420" stroke="#F4C93B" stroke-opacity="0.04"/>
     </pattern>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;display=swap');
-      .strip-watermark { font-family: 'Space Mono', monospace; font-size: 10px; fill: #1E3D2B; fill-opacity: 0.08; }
-      .strip-label { font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; fill: #4A3F1A; letter-spacing: 3px; }
+      .strip-watermark { font-family: monospace; font-size: 10px; fill: #1E3D2B; fill-opacity: 0.08; }
+      .strip-label { font-family: monospace; font-size: 9px; font-weight: 700; fill: #4A3F1A; letter-spacing: 3px; }
     </style>
   </defs>
 
