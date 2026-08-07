@@ -400,44 +400,10 @@ export function Generator() {
   }
 
   const onSubmit = () => void render();
-  async function shareOnX() {
+  function shareOnX() {
     const shareText = "Built for HH Goa 2026 🚀\n\n#FrameInGoa #HHGoa2026";
     const shareUrl = generatedVerifyUrl || (typeof window !== "undefined" ? window.location.href : "");
-
-    if (generatedImage) {
-      try {
-        const blob = dataUrlToBlob(generatedImage);
-        const file = new File([blob], "hh-goa-2026-builder-id.png", { type: "image/png" });
-
-        // 1. Try Native Web Share API with File Attachment
-        if (typeof navigator !== "undefined" && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: "HH Goa 2026 Verified Builder ID Card",
-            text: `${shareText}\n\nVerify ID: ${shareUrl}`,
-            files: [file],
-          });
-          setNotice({ kind: "success", text: "ID Card image attached & shared!" });
-          return;
-        }
-
-        // 2. Copy Image to Clipboard so user can press Ctrl+V / Paste directly on X
-        if (typeof navigator !== "undefined" && navigator.clipboard && typeof ClipboardItem !== "undefined") {
-          try {
-            await navigator.clipboard.write([
-              new ClipboardItem({ [blob.type || "image/png"]: blob })
-            ]);
-            setNotice({ kind: "success", text: "ID Card image copied to clipboard! Press Ctrl+V to paste image into your tweet." });
-          } catch {
-            /* Fallback if clipboard write is blocked */
-          }
-        }
-      } catch {
-        /* Fallback to intent URL */
-      }
-    }
-
-    // 3. Open X / Twitter intent with text & verification URL
-    const tweetText = `${shareText}${shareUrl ? `\n\nVerify ID: ${shareUrl}` : ""}`;
+    const tweetText = `${shareText}\n\n${shareUrl}`;
     const href = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
     window.open(href, "_blank", "noopener,noreferrer");
   }

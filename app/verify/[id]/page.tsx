@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { ArrowLeft, Calendar, ShieldCheck, Sparkles, User } from "lucide-react";
 import Link from "next/link";
 import { VerifyWalletCard } from "@/components/verify-wallet-card";
@@ -15,9 +16,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (!card) {
       return { title: "ID Card Not Found | HH Goa 2026" };
     }
+    const headerList = await headers();
+    const host = headerList.get("host") || "id-card-generator-chi-ochre.vercel.app";
+    const protocol = headerList.get("x-forwarded-proto") || "https";
+    const ogImageUrl = `${protocol}://${host}/api/og?id=${id}`;
+
+    const pageTitle = `${card.name || "Builder"} | Verified ID Card · HH Goa 2026`;
+    const pageDesc = `Official Verified Builder ID Card for ${card.name || "Attendee"} (${card.role || "Builder"}). Verified across DB and Web3 blockchain.`;
+
     return {
-      title: `${card.name || "Builder"} | Verified ID Card · HH Goa 2026`,
-      description: `Verified Builder ID Card for ${card.name || "Attendee"} (${card.role || "Builder"}). Verified across DB and Web3 blockchain.`,
+      title: pageTitle,
+      description: pageDesc,
+      openGraph: {
+        title: pageTitle,
+        description: pageDesc,
+        images: [{ url: ogImageUrl, width: 840, height: 1440, alt: `${card.name}'s ID Card` }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: pageTitle,
+        description: pageDesc,
+        images: [ogImageUrl],
+      },
     };
   } catch {
     return { title: "Verified ID Card · HH Goa 2026" };
