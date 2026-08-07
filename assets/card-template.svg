@@ -1,29 +1,72 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="420" height="720" viewBox="0 0 420 720">
   <defs>
-    <pattern id="grid" width="90" height="39" patternUnits="userSpaceOnUse"><path d="M0 38.5H90M89.5 0V39" stroke="#F4C93B" stroke-opacity=".08"/></pattern>
+    <!-- Cyber Grid Pattern -->
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#F4C93B" stroke-width="1" stroke-opacity="0.07"/>
+    </pattern>
+    <!-- Gold Gradient Accent -->
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F4C93B"/>
+      <stop offset="100%" stop-color="#FFDC65"/>
+    </linearGradient>
+    <linearGradient id="pink-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D94F8C"/>
+      <stop offset="100%" stop-color="#FF2A85"/>
+    </linearGradient>
   </defs>
-  <rect width="420" height="720" fill="#1E3D2B"/>
+
+  <!-- Card Background -->
+  <rect width="420" height="720" rx="0" fill="#062C1B"/>
   <rect width="420" height="720" fill="url(#grid)"/>
-  <text x="20" y="30" fill="#F4C93B" fill-opacity=".09" font-family="Courier New, monospace" font-size="11" letter-spacing="3">HACKER HOUSE GOA 2026 BUILD SHIP LAUNCH</text>
-  <text x="20" y="43" fill="#F4C93B" fill-opacity=".09" font-family="Courier New, monospace" font-size="11" letter-spacing="3">GOA INDIA HACKER HOUSE GOA BUILD SHIP</text>
-  <text x="210" y="26" fill="#A8C9B0" font-family="Courier New, monospace" font-size="10" letter-spacing="2" text-anchor="middle">HACKER HOUSE GOA · BUILDER ID</text>
-  <g transform="translate(24 44)">
-    <rect width="146" height="35" rx="17.5" fill="#F4C93B"/>
-    <circle cx="21" cy="17.5" r="13" fill="#D94F8C"/>
-    <text x="21" y="22" fill="#fff" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="12">H</text>
-    <text x="42" y="15" fill="#1E3D2B" font-family="Courier New, monospace" font-size="10" font-weight="bold">2:47 PM Studio</text>
-    <text x="42" y="26" fill="#4A3F1A" font-family="Courier New, monospace" font-size="7" letter-spacing=".5">HACKER HOUSE GOA</text>
+
+  <!-- Outer Border Frame -->
+  <rect x="10" y="10" width="400" height="700" fill="none" stroke="#F4C93B" stroke-width="1.5" stroke-opacity="0.25"/>
+  <rect x="14" y="14" width="392" height="692" fill="none" stroke="#F4C93B" stroke-width="0.5" stroke-dasharray="4 4" stroke-opacity="0.2"/>
+
+  <!-- Top Header Bar -->
+  <text x="24" y="32" fill="#8EB89B" font-family="'Space Mono', 'Courier New', monospace" font-size="9" letter-spacing="2">HACKER HOUSE GOA · OFFICIAL BUILDER ID</text>
+  <text x="396" y="32" fill="#F4C93B" font-family="'Space Mono', 'Courier New', monospace" font-size="9" letter-spacing="1" text-anchor="end">2026</text>
+  <line x1="24" y1="40" x2="396" y2="40" stroke="#F4C93B" stroke-width="1" stroke-opacity="0.3"/>
+
+  <!-- Studio Badge -->
+  <g transform="translate(24, 48)">
+    <rect width="140" height="26" rx="13" fill="#F4C93B"/>
+    <circle cx="15" cy="13" r="9" fill="#062C1B"/>
+    <text x="15" y="16.5" fill="#F4C93B" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="10" font-weight="900">247</text>
+    <text x="32" y="16.5" fill="#062C1B" font-family="'Space Mono', monospace" font-size="9" font-weight="700" letter-spacing="0.5">2:47 PM STUDIO</text>
   </g>
-  <g transform="translate(300 50)" fill="none">
-    <circle cx="130" cy="130" r="120" stroke="#F4C93B" stroke-width="18"/>
-    <circle cx="130" cy="130" r="80" stroke="#D94F8C" stroke-width="14"/>
-    <circle cx="130" cy="130" r="40" stroke="#F4C93B" stroke-width="10"/>
+
+  <!-- Big Hero Title -->
+  <g transform="translate(24, 95)">
+    <text y="38" fill="#F4C93B" font-family="Impact, 'Arial Black', sans-serif" font-size="46" letter-spacing="1.5">HACKER</text>
+    <text y="78" fill="#F4C93B" font-family="Impact, 'Arial Black', sans-serif" font-size="46" letter-spacing="1.5">HOUSE</text>
+    
+    <!-- Pink Goa Badge -->
+    <g transform="translate(182, 42) rotate(-3)">
+      <rect width="84" height="28" rx="7" fill="url(#pink-grad)"/>
+      <text x="42" y="20" fill="#F4C93B" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="19" letter-spacing="2">गोवा</text>
+    </g>
+
+    <text y="104" fill="#F4F1EA" font-family="'Space Mono', monospace" font-size="11" font-weight="700" letter-spacing="1">GOA, INDIA · 28–31 OCT 2026</text>
+    <line x1="0" y1="112" x2="372" y2="112" stroke="#F4C93B" stroke-width="1.5"/>
   </g>
-  <g transform="translate(26 100)">
-    <text fill="#F4C93B" font-family="Impact, Arial Black, sans-serif" font-size="52" letter-spacing="1">HACKER</text>
-    <text y="48" fill="#F4C93B" font-family="Impact, Arial Black, sans-serif" font-size="52" letter-spacing="1">HOUSE</text>
-    <g transform="translate(0 58) rotate(-2)"><rect width="95" height="28" rx="6" fill="#D94F8C"/><text x="13" y="21" fill="#F4C93B" font-family="Impact, Arial Black, sans-serif" font-size="20" letter-spacing="2">गोवा</text></g>
-    <text y="108" fill="#F2EDE0" font-family="Courier New, monospace" font-size="14" font-weight="bold" letter-spacing="1">GOA, INDIA · 28–31 OCT 2026</text>
-    <path d="M0 116H277" stroke="#F4C93B" stroke-width="2"/>
+
+  <!-- Goa Beach Palm Silhouette Watermark -->
+  <g opacity="0.12" fill="#F4C93B">
+    <!-- Mini Palm Left -->
+    <path d="M 28 220 C 35 180, 50 160, 65 140 C 45 145, 30 155, 20 170 Z" />
+    <path d="M 65 140 C 85 130, 105 135, 120 150 C 95 150, 75 145, 65 140 Z" />
+    <path d="M 28 220 L 32 220 L 65 140 L 61 140 Z" />
+    
+    <!-- Mini Palm Right -->
+    <path d="M 390 220 C 383 180, 368 160, 353 140 C 373 145, 388 155, 398 170 Z" />
+    <path d="M 353 140 C 333 130, 313 135, 298 150 C 323 150, 343 145, 353 140 Z" />
+    <path d="M 390 220 L 386 220 L 353 140 L 357 140 Z" />
+  </g>
+
+  <!-- Photo Box Frame Backdrop -->
+  <g transform="translate(35, 235)">
+    <rect width="350" height="280" rx="16" fill="#093823" stroke="#F4C93B" stroke-width="2" stroke-opacity="0.4"/>
+    <rect x="6" y="6" width="338" height="268" rx="12" fill="none" stroke="#F4C93B" stroke-width="1" stroke-dasharray="6 4" stroke-opacity="0.2"/>
   </g>
 </svg>

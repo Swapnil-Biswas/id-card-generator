@@ -1,12 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="420" height="720" viewBox="0 0 420 720">
   <defs>
-    <clipPath id="strip"><path d="M0 530L420 510V720H0Z"/></clipPath>
-    <pattern id="lines" width="420" height="21" patternUnits="userSpaceOnUse"><path d="M0 20.5H420" stroke="#1E3D2B" stroke-opacity=".08"/></pattern>
+    <clipPath id="bottom-strip">
+      <path d="M 0 535 L 420 520 L 420 720 L 0 720 Z"/>
+    </clipPath>
+    <pattern id="lines" width="420" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 0 23.5 H 420" stroke="#062C1B" stroke-opacity="0.08"/>
+    </pattern>
   </defs>
-  <g clip-path="url(#strip)">
-    <rect x="0" y="510" width="420" height="210" fill="#F4C93B"/>
-    <rect x="0" y="510" width="420" height="210" fill="url(#lines)"/>
-    <text x="20" y="550" fill="#1E3D2B" fill-opacity=".1" font-family="Courier New, monospace" font-size="10" letter-spacing="2">HACKER HOUSE GOA BUILD SHIP LAUNCH GOA INDIA OCT 2026</text>
-    <text x="20" y="563" fill="#1E3D2B" fill-opacity=".1" font-family="Courier New, monospace" font-size="10" letter-spacing="2">HACKER HOUSE GOA BUILD SHIP LAUNCH GOA INDIA OCT 2026</text>
+
+  <!-- Bottom Gold Credential Banner -->
+  <g clip-path="url(#bottom-strip)">
+    <rect x="0" y="515" width="420" height="205" fill="#F4C93B"/>
+    <rect x="0" y="515" width="420" height="205" fill="url(#lines)"/>
+    
+    <!-- Top Border Line of Banner -->
+    <path d="M 0 535 L 420 520" stroke="#062C1B" stroke-width="3"/>
+    
+    <!-- Watermark Telemetry Background Text -->
+    <text x="18" y="548" fill="#062C1B" fill-opacity="0.12" font-family="'Space Mono', monospace" font-size="9" font-weight="700" letter-spacing="2">HACKER HOUSE GOA · BUILD SHIP LAUNCH · 2026</text>
+    <text x="18" y="560" fill="#062C1B" fill-opacity="0.1" font-family="'Space Mono', monospace" font-size="9" font-weight="700" letter-spacing="2">GOA INDIA · OFFICIAL BUILDER ID CARD</text>
   </g>
 </svg>

@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { Results, SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 import { generateImageAction, normalizePhotoForSegmentationAction } from "@/app/actions";
+import { GoaBeachHero } from "@/components/goa-beach-hero";
 import { ImageUploader } from "@/components/image-uploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -128,6 +129,39 @@ export function Generator() {
       transform: `scale(${zoom}) translate(${txPercent / zoom}%, ${tyPercent / zoom}%)`,
     };
   }, [mode, zoom, positionX, positionY, imageAspectRatio]);
+
+  const nameFontSize = useMemo(() => {
+    if (!watchName) return TemplateConfig.name.fontSize;
+    let size = TemplateConfig.name.fontSize;
+    const maxW = TemplateConfig.name.width;
+    const charRatio = 0.68;
+    while (watchName.length * size * charRatio > maxW && size > TemplateConfig.name.minFontSize) {
+      size -= 1;
+    }
+    return size;
+  }, [watchName]);
+
+  const roleFontSize = useMemo(() => {
+    if (!watchRole) return TemplateConfig.role.fontSize;
+    let size = TemplateConfig.role.fontSize;
+    const maxW = TemplateConfig.role.width;
+    const charRatio = 0.60;
+    while (watchRole.length * size * charRatio > maxW && size > TemplateConfig.role.minFontSize) {
+      size -= 1;
+    }
+    return size;
+  }, [watchRole]);
+
+  const titleFontSize = useMemo(() => {
+    if (!watchTitle) return TemplateConfig.title.fontSize;
+    let size = TemplateConfig.title.fontSize;
+    const maxW = TemplateConfig.title.width;
+    const charRatio = 0.60;
+    while (watchTitle.length * size * charRatio > maxW && size > TemplateConfig.title.minFontSize) {
+      size -= 1;
+    }
+    return size;
+  }, [watchTitle]);
 
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
   useEffect(() => () => { if (foregroundPreviewUrl) URL.revokeObjectURL(foregroundPreviewUrl); }, [foregroundPreviewUrl]);
@@ -267,6 +301,9 @@ export function Generator() {
             BUILD · SHIP · LAUNCH · GOA INDIA 2026
           </p>
         </div>
+
+        {/* Goa Beach Sunset Illustration Hero */}
+        <GoaBeachHero />
 
         {/* Generator Workspace Grid */}
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(380px,0.85fr)] lg:items-start">
@@ -445,13 +482,13 @@ export function Generator() {
                     <div className="absolute inset-0 pointer-events-none [container-type:size]">
                       {watchName && (
                         <div
-                          className="absolute font-black truncate"
+                          className="absolute font-black whitespace-nowrap overflow-hidden text-ellipsis"
                           style={{
                             left: `${(TemplateConfig.name.x / 420) * 100}%`,
                             top: `${(TemplateConfig.name.y / 720) * 100}%`,
                             width: `${(TemplateConfig.name.width / 420) * 100}%`,
                             height: `${(TemplateConfig.name.height / 720) * 100}%`,
-                            fontSize: `${(TemplateConfig.name.fontSize / 420) * 100}cqw`,
+                            fontSize: `${(nameFontSize / 420) * 100}cqw`,
                             color: TemplateConfig.name.color,
                             fontFamily: TemplateConfig.name.fontFamily,
                             lineHeight: 1,
@@ -462,13 +499,13 @@ export function Generator() {
                       )}
                       {watchRole && (
                         <div
-                          className="absolute font-bold truncate"
+                          className="absolute font-bold whitespace-nowrap overflow-hidden text-ellipsis"
                           style={{
                             left: `${(TemplateConfig.role.x / 420) * 100}%`,
                             top: `${(TemplateConfig.role.y / 720) * 100}%`,
                             width: `${(TemplateConfig.role.width / 420) * 100}%`,
                             height: `${(TemplateConfig.role.height / 720) * 100}%`,
-                            fontSize: `${(TemplateConfig.role.fontSize / 420) * 100}cqw`,
+                            fontSize: `${(roleFontSize / 420) * 100}cqw`,
                             color: TemplateConfig.role.color,
                             fontFamily: TemplateConfig.role.fontFamily,
                             lineHeight: 1,
@@ -479,13 +516,13 @@ export function Generator() {
                       )}
                       {watchTitle && (
                         <div
-                          className="absolute font-bold truncate"
+                          className="absolute font-bold whitespace-nowrap overflow-hidden text-ellipsis"
                           style={{
                             left: `${(TemplateConfig.title.x / 420) * 100}%`,
                             top: `${(TemplateConfig.title.y / 720) * 100}%`,
                             width: `${(TemplateConfig.title.width / 420) * 100}%`,
                             height: `${(TemplateConfig.title.height / 720) * 100}%`,
-                            fontSize: `${(TemplateConfig.title.fontSize / 420) * 100}cqw`,
+                            fontSize: `${(titleFontSize / 420) * 100}cqw`,
                             color: TemplateConfig.title.color,
                             fontFamily: TemplateConfig.title.fontFamily,
                             lineHeight: 1,
