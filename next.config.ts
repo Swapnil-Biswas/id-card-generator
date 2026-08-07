@@ -3,7 +3,7 @@ import path from "node:path";
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
-  outputFileTracingIncludes: { "/*": ["./assets/**/*"] },
+  outputFileTracingIncludes: { "/*": ["./assets/**/*", "./fonts.conf"] },
   experimental: {
     serverActions: { bodySizeLimit: "15mb" },
   },
