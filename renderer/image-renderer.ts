@@ -65,6 +65,21 @@ function topFadeMask(width: number, height: number, fadeHeight: number) {
   );
 }
 
+async function applyBottomFade(imageBuffer: Buffer, width: number, height: number): Promise<any> {
+  const mask = Buffer.from(
+    `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bfade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="80%" stop-color="#ffffff" stop-opacity="1"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#bfade)"/>
+    </svg>`
+  );
+  return sharp(imageBuffer).composite([{ input: mask, blend: "dest-in" }]).png({ compressionLevel: 1 }).toBuffer();
+}
+
 async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transform?: RenderInput["transform"], applyTopFade = false, fadeHeight = 130) {
   const normalized = sharp(photo, { failOn: "none", animated: false }).rotate();
   const metadata = await normalized.metadata();
@@ -83,6 +98,9 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
 
   if (!hasManualPosition) {
     result = await normalized.resize(box.width, box.height, { fit: "cover", position: "center", background: { r: 0, g: 0, b: 0, alpha: 0 }, kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 1 }).toBuffer();
+    if (applyTopFade) {
+      result = await applyBottomFade(result, box.width, box.height);
+    }
   } else {
     const scale = Math.max(box.width / width, box.height / height) * zoom;
     const scaledWidth = Math.ceil(width * scale);
@@ -101,7 +119,7 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
     const cropWidth = Math.min(scaledWidth - srcLeft, box.width - Math.max(0, shiftX));
     const cropHeight = Math.min(scaledHeight - srcTop, box.height - Math.max(0, shiftY));
 
-    const cropped = await sharp(positioned)
+    let cropped = await sharp(positioned)
       .extract({
         left: Math.round(srcLeft),
         top: Math.round(srcTop),
@@ -109,6 +127,10 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
         height: Math.round(cropHeight)
       })
       .toBuffer();
+
+    if (applyTopFade) {
+      cropped = await applyBottomFade(cropped, Math.round(cropWidth), Math.round(cropHeight));
+    }
 
     const compositeLeft = Math.max(0, shiftX);
     const compositeTop = Math.max(0, shiftY);

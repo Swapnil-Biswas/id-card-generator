@@ -612,7 +612,11 @@ export function Generator() {
                           src={foregroundPreviewUrl ?? previewUrl}
                           alt="Photo cutout preview"
                           className="h-full w-full object-cover object-center"
-                          style={transformStyle}
+                          style={{
+                            ...transformStyle,
+                            WebkitMaskImage: mode === "card" ? "linear-gradient(to bottom, #000 80%, transparent 100%)" : undefined,
+                            maskImage: mode === "card" ? "linear-gradient(to bottom, #000 80%, transparent 100%)" : undefined,
+                          }}
                         />
                       </div>
                     )}
