@@ -30,7 +30,7 @@ function getSegmenter() {
   if (!segmenterPromise) {
     segmenterPromise = import("@mediapipe/selfie_segmentation").then(async ({ SelfieSegmentation }) => {
       const segmenter = new SelfieSegmentation({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/${file}`
+        locateFile: (file) => `/mediapipe/${file}`
       });
       segmenter.setOptions({ modelSelection: 0, selfieMode: false });
       await segmenter.initialize();
@@ -153,7 +153,7 @@ function smartColorBackgroundRemoval(inputCanvas: HTMLCanvasElement): HTMLCanvas
 
 async function createPortraitCutout(file: File) {
   const image = await loadImage(file);
-  const scale = Math.min(1, 1280 / Math.max(image.naturalWidth, image.naturalHeight));
+  const scale = Math.min(1, 640 / Math.max(image.naturalWidth, image.naturalHeight));
   const width = Math.max(1, Math.round(image.naturalWidth * scale));
   const height = Math.max(1, Math.round(image.naturalHeight * scale));
   const input = document.createElement("canvas");

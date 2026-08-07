@@ -125,7 +125,8 @@ export async function normalizePhotoForSegmentationAction(formData: FormData): P
     const photoBuffer = Buffer.from(await photoFile.arrayBuffer());
     const normalizedJpeg = await sharp(photoBuffer, { failOn: "none", animated: false })
       .rotate()
-      .jpeg({ quality: 85 })
+      .resize(1024, 1024, { fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 80 })
       .toBuffer();
     return {
       ok: true,
