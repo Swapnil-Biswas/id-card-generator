@@ -1,5 +1,7 @@
 "use server";
 
+import "./init-fontconfig";
+
 import { headers } from "next/headers";
 import { TemplateConfig } from "@/config/template";
 import { createCardId, saveCardRecord } from "@/lib/db";

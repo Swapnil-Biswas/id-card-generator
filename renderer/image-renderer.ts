@@ -1,3 +1,4 @@
+import "../app/init-fontconfig";
 import QRCode from "qrcode";
 import sharp, { type FitEnum, type OverlayOptions } from "sharp";
 import { TemplateConfig, type Box } from "@/config/template";
