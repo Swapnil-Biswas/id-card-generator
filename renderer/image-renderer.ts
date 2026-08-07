@@ -18,6 +18,16 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
   const normalized = sharp(photo, { failOn: "none", animated: false }).rotate();
   const metadata = await normalized.metadata();
   if (!metadata.width || !metadata.height) throw new Error("We couldn't read that image. Please try another photo.");
+  
+  let width = metadata.width;
+  let height = metadata.height;
+  // If the image orientation metadata suggests the image is rotated 90 or 270 degrees,
+  // the width and height will be swapped after calling .rotate().
+  if (metadata.orientation && metadata.orientation >= 5) {
+    width = metadata.height;
+    height = metadata.width;
+  }
+
   const zoom = Math.min(3, Math.max(1, transform?.zoom ?? 1));
   const hasManualPosition = zoom > 1.01 || Math.abs(transform?.x ?? 0) > 0.01 || Math.abs(transform?.y ?? 0) > 0.01;
   let result: Buffer;
@@ -25,9 +35,9 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
   if (!hasManualPosition) {
     result = await normalized.resize(box.width, box.height, { fit: "cover", position: "attention", kernel: sharp.kernel.lanczos3 }).png().toBuffer();
   } else {
-    const scale = Math.max(box.width / metadata.width, box.height / metadata.height) * zoom;
-    const scaledWidth = Math.max(box.width, Math.ceil(metadata.width * scale));
-    const scaledHeight = Math.max(box.height, Math.ceil(metadata.height * scale));
+    const scale = Math.max(box.width / width, box.height / height) * zoom;
+    const scaledWidth = Math.max(box.width, Math.ceil(width * scale));
+    const scaledHeight = Math.max(box.height, Math.ceil(height * scale));
     const positioned = await normalized.resize(scaledWidth, scaledHeight, { fit: "fill", kernel: sharp.kernel.lanczos3 }).png().toBuffer();
     const horizontal = Math.min(1, Math.max(0, 0.5 + (transform?.x ?? 0) / 2));
     const vertical = Math.min(1, Math.max(0, 0.5 + (transform?.y ?? 0) / 2));

@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TabButton } from "@/components/ui/tabs";
-import { ShareConfig } from "@/config/template";
+import { ShareConfig, TemplateConfig } from "@/config/template";
 import { dataUrlToBlob } from "@/lib/utils";
 import type { GeneratorMode } from "@/renderer/types";
 
@@ -84,7 +84,40 @@ export function Generator() {
   const [positionX, setPositionX] = useState(0);
   const [positionY, setPositionY] = useState(0);
   const removalRequest = useRef(0);
+  const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
   const { register, handleSubmit, getValues, formState: { errors } } = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: { name: "", role: "", title: "" } });
+
+  const transformStyle = useMemo(() => {
+    if (!imageAspectRatio) return undefined;
+    const config = TemplateConfig;
+    const canvas = mode === "card" ? (config.cardCanvas ?? config.canvas) : config.canvas;
+    const box = mode === "card" ? (config.cardPhoto ?? config.photo) : config.photo;
+
+    const boxRatio = box.width / box.height;
+    let scaledWidth: number;
+    let scaledHeight: number;
+
+    if (imageAspectRatio > boxRatio) {
+      scaledHeight = box.height * zoom;
+      scaledWidth = scaledHeight * imageAspectRatio;
+    } else {
+      scaledWidth = box.width * zoom;
+      scaledHeight = scaledWidth / imageAspectRatio;
+    }
+
+    const overflowX = scaledWidth - box.width;
+    const overflowY = scaledHeight - box.height;
+
+    const tx = (overflowX * -positionX) / 2;
+    const ty = (overflowY * -positionY) / 2;
+
+    const txPercent = (tx / box.width) * 100;
+    const tyPercent = (ty / box.height) * 100;
+
+    return {
+      transform: `scale(${zoom}) translate(${txPercent / zoom}%, ${tyPercent / zoom}%)`,
+    };
+  }, [mode, zoom, positionX, positionY, imageAspectRatio]);
 
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
   useEffect(() => () => { if (foregroundPreviewUrl) URL.revokeObjectURL(foregroundPreviewUrl); }, [foregroundPreviewUrl]);
@@ -104,6 +137,15 @@ export function Generator() {
     setHasAttemptedRemoval(false);
     setGeneratedImage(null);
     setZoom(1); setPositionX(0); setPositionY(0);
+    if (nextPhoto) {
+      loadImage(nextPhoto).then((img) => {
+        setImageAspectRatio(img.naturalWidth / img.naturalHeight);
+      }).catch(() => {
+        setImageAspectRatio(null);
+      });
+    } else {
+      setImageAspectRatio(null);
+    }
   }
 
   async function removePhotoBackground(sourcePhoto: File) {
@@ -181,7 +223,109 @@ export function Generator() {
           {notice && <p role="status" className={`rounded-xl px-3 py-2 text-sm ${notice.kind === "error" ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>{notice.text}</p>}
         </form>
       </section>
-      <aside className="lg:sticky lg:top-6"><div className="overflow-hidden rounded-3xl border bg-card p-4 shadow-soft sm:p-6"><div className="mb-4 flex items-center justify-between"><div><h2 className="font-semibold">Preview</h2><p className="text-xs text-muted-foreground">High-resolution export</p></div><span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">PNG</span></div><div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#e3eee6] to-[#f7f5ee] ${mode === "card" ? "aspect-[7/12]" : "aspect-[4/5]"}`}>{generatedImage ? <img src={generatedImage} alt={generatedLabel} className="h-full w-full object-contain" /> : mode === "card" ? <><img src="/api/template?layer=card" alt="Hacker House Goa ID card template" className="absolute inset-0 h-full w-full object-cover" />{previewUrl && <img src={foregroundPreviewUrl ?? previewUrl} alt="Photo cutout preview" className={foregroundPreviewUrl ? "absolute inset-0 h-full w-full object-contain" : "absolute inset-0 h-full w-full object-cover"} style={{ transform: `scale(${zoom}) translate(${positionX * -16}%, ${positionY * -16}%)` }} />}<img src="/api/template?layer=overlay" alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full object-cover" />{!previewUrl && <div className="absolute inset-x-8 top-[42%] rounded-xl bg-[#1e3d2b]/85 px-3 py-2 text-center text-xs font-semibold text-[#f4c93b]">Your background-free photo will appear here</div>}</> : previewUrl ? <img src={previewUrl} alt="Photo preview" className="h-full w-full object-cover" style={{ transform: `scale(${zoom}) translate(${positionX * -16}%, ${positionY * -16}%)` }} /> : <div className="absolute inset-0 grid place-items-center p-8 text-center"><div><div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-white shadow-sm"><Sparkles className="h-6 w-6 text-primary" /></div><p className="text-sm font-semibold">Your design appears here</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Upload a photo, then create your profile frame.</p></div></div>}</div>
+      <aside className="lg:sticky lg:top-6">
+        <div className="overflow-hidden rounded-3xl border bg-card p-4 shadow-soft sm:p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold">Preview</h2>
+              <p className="text-xs text-muted-foreground">High-resolution export</p>
+            </div>
+            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">PNG</span>
+          </div>
+          <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#e3eee6] to-[#f7f5ee] ${mode === "card" ? "aspect-[7/12]" : "aspect-[4/5]"}`}>
+            {generatedImage ? (
+              <img src={generatedImage} alt={generatedLabel} className="h-full w-full object-contain" />
+            ) : mode === "card" ? (
+              <>
+                <img
+                  src="/api/template?layer=card"
+                  alt="Hacker House Goa ID card template"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+                {previewUrl && (
+                  <div
+                    className="absolute overflow-hidden"
+                    style={{
+                      left: `${((TemplateConfig.cardPhoto ?? TemplateConfig.photo).x / (TemplateConfig.cardCanvas ?? TemplateConfig.canvas).width) * 100}%`,
+                      top: `${((TemplateConfig.cardPhoto ?? TemplateConfig.photo).y / (TemplateConfig.cardCanvas ?? TemplateConfig.canvas).height) * 100}%`,
+                      width: `${((TemplateConfig.cardPhoto ?? TemplateConfig.photo).width / (TemplateConfig.cardCanvas ?? TemplateConfig.canvas).width) * 100}%`,
+                      height: `${((TemplateConfig.cardPhoto ?? TemplateConfig.photo).height / (TemplateConfig.cardCanvas ?? TemplateConfig.canvas).height) * 100}%`,
+                      borderRadius: (TemplateConfig.cardPhoto ?? TemplateConfig.photo).radius > 0 ? "50%" : "0%",
+                    }}
+                  >
+                    <img
+                      src={foregroundPreviewUrl ?? previewUrl}
+                      alt="Photo cutout preview"
+                      className="h-full w-full object-cover"
+                      style={transformStyle}
+                    />
+                  </div>
+                )}
+                <img
+                  src="/api/template?layer=overlay"
+                  alt=""
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+                {!previewUrl && (
+                  <div className="absolute inset-x-8 top-[42%] rounded-xl bg-[#1e3d2b]/85 px-3 py-2 text-center text-xs font-semibold text-[#f4c93b]">
+                    Your background-free photo will appear here
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <img
+                  src="/api/template?layer=background"
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+                {previewUrl && (
+                  <div
+                    className="absolute overflow-hidden"
+                    style={{
+                      left: `${(TemplateConfig.photo.x / TemplateConfig.canvas.width) * 100}%`,
+                      top: `${(TemplateConfig.photo.y / TemplateConfig.canvas.height) * 100}%`,
+                      width: `${(TemplateConfig.photo.width / TemplateConfig.canvas.width) * 100}%`,
+                      height: `${(TemplateConfig.photo.height / TemplateConfig.canvas.height) * 100}%`,
+                      borderRadius: TemplateConfig.photo.radius > 0 ? "50%" : "0%",
+                    }}
+                  >
+                    <img
+                      src={previewUrl}
+                      alt="Photo preview"
+                      className="h-full w-full object-cover"
+                      style={transformStyle}
+                    />
+                  </div>
+                )}
+                <img
+                  src="/api/template?layer=frame"
+                  alt=""
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+                {!previewUrl && (
+                  <div className="absolute inset-0 grid place-items-center p-8 text-center">
+                    <div>
+                      <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-white shadow-sm">
+                        <Sparkles className="h-6 w-6 text-primary" />
+                      </div>
+                      <p className="text-sm font-semibold">Your design appears here</p>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        Upload a photo, then create your profile frame.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         {generatedImage && <div className="mt-4 grid grid-cols-2 gap-2"><Button variant="outline" onClick={() => void render("png", true)} disabled={isGenerating}><Download className="h-4 w-4" /> PNG</Button><Button variant="outline" onClick={() => void render("jpeg", true)} disabled={isGenerating}><Download className="h-4 w-4" /> JPG</Button><Button className="col-span-2" onClick={shareOnX}><Share2 className="h-4 w-4" /> Share on X</Button></div>}
       </div><p className="mt-3 px-2 text-center text-xs leading-5 text-muted-foreground">Your upload is processed only to create this image. Background removal runs locally in your browser; this app does not store photos.</p></aside>
     </div>

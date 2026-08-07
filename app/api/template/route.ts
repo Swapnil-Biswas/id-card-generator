@@ -6,7 +6,16 @@ export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   const layer = request.nextUrl.searchParams.get("layer");
-  const fileName = layer === "overlay" ? TemplateConfig.files.cardOverlay : layer === "card" ? TemplateConfig.files.cardTemplate : undefined;
+  const fileName =
+    layer === "overlay"
+      ? TemplateConfig.files.cardOverlay
+      : layer === "card"
+      ? TemplateConfig.files.cardTemplate
+      : layer === "frame"
+      ? TemplateConfig.files.frame
+      : layer === "background"
+      ? TemplateConfig.files.background
+      : undefined;
   if (!fileName) return new Response("Not found", { status: 404 });
   const asset = await loadOptionalAsset(fileName);
   if (!asset) return new Response("Template asset is missing", { status: 404 });
