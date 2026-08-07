@@ -2,11 +2,19 @@
 
 process.env.FONTCONFIG_PATH = process.cwd();
 
+import { headers } from "next/headers";
+import { saveCardRecord } from "@/lib/db";
 import { ImageRenderer } from "@/renderer/image-renderer";
 import type { GeneratorMode } from "@/renderer/types";
 import sharp from "sharp";
 
-export type GenerationResponse = { ok: true; image: string; mimeType: "image/png" | "image/jpeg" } | { ok: false; error: string };
+export type GenerationResponse = {
+  ok: true;
+  image: string;
+  mimeType: "image/png" | "image/jpeg";
+  cardId?: string;
+  verifyUrl?: string;
+} | { ok: false; error: string };
 
 const acceptedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "image/avif"]);
 
@@ -18,17 +26,54 @@ export async function generateImageAction(formData: FormData): Promise<Generatio
     if (photo.type && !acceptedTypes.has(photo.type)) return { ok: false, error: "Use a JPG, PNG, WebP, HEIC, or AVIF photo." };
     const mode = (formData.get("mode") === "card" ? "card" : "frame") satisfies GeneratorMode;
     const format = formData.get("format") === "jpeg" ? "jpeg" : "png";
+    const photoBuffer = Buffer.from(await photo.arrayBuffer());
+    
+    let cardId: string | undefined = undefined;
+    let verifyUrl: string | undefined = undefined;
+
+    if (mode === "card") {
+      const headerList = await headers();
+      const host = headerList.get("host") || "localhost:3000";
+      const protocol = headerList.get("x-forwarded-proto") || "http";
+      cardId = `hh_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
+      verifyUrl = `${protocol}://${host}/verify/${cardId}`;
+
+      const resizedPhotoBuffer = await sharp(photoBuffer)
+        .rotate()
+        .resize(400, 400, { fit: "inside", withoutEnlargement: true })
+        .png({ quality: 80 })
+        .toBuffer();
+      const photoDataUrl = `data:image/png;base64,${resizedPhotoBuffer.toString("base64")}`;
+      await saveCardRecord({
+        id: cardId,
+        name: String(formData.get("name") ?? ""),
+        role: String(formData.get("role") ?? ""),
+        title: String(formData.get("title") ?? ""),
+        photoDataUrl,
+        createdAt: new Date().toISOString(),
+        verifiedInDb: true,
+        blockchainVerified: false,
+      });
+    }
+
     const renderer = new ImageRenderer();
     const result = await renderer.render({
       mode,
-      photo: Buffer.from(await photo.arrayBuffer()),
+      photo: photoBuffer,
       name: String(formData.get("name") ?? ""),
       role: String(formData.get("role") ?? ""),
       title: String(formData.get("title") ?? ""),
       format,
+      qrUrl: verifyUrl,
       transform: { zoom: Number(formData.get("zoom") ?? 1), x: Number(formData.get("positionX") ?? 0), y: Number(formData.get("positionY") ?? 0) },
     });
-    return { ok: true, image: `data:${result.contentType};base64,${result.buffer.toString("base64")}`, mimeType: result.contentType };
+    return {
+      ok: true,
+      image: `data:${result.contentType};base64,${result.buffer.toString("base64")}`,
+      mimeType: result.contentType,
+      cardId,
+      verifyUrl,
+    };
   } catch (error) {
     console.error("Image generation failed", error);
     return { ok: false, error: "We couldn't generate your image. Try a different photo or a smaller file." };

@@ -2,9 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --background: 42 30% 97%; --foreground: 146 31% 12%; --muted: 42 18% 92%; --muted-foreground: 145 8% 40%; --card: 0 0% 100%; --border: 38 18% 85%; --primary: 151 49% 30%; --primary-foreground: 0 0% 100%; }
-* { border-color: hsl(var(--border)); }
-html { background: hsl(var(--background)); }
-body { min-height: 100vh; color: hsl(var(--foreground)); background: hsl(var(--background)); font-family: Arial, Helvetica, sans-serif; }
-button, input { font: inherit; }
-::selection { background: hsl(var(--primary) / .18); }
+:root {
+  --background: 154 75% 7%; /* #062C1B */
+  --foreground: 42 30% 95%; /* #F4F1EA */
+  --card: 154 70% 11%; /* #093823 */
+  --card-foreground: 42 30% 95%;
+  --muted: 154 50% 15%; /* #0F4D31 */
+  --muted-foreground: 150 25% 65%; /* #8EB89B */
+  --border: 154 45% 22%; /* #175B3B */
+  --primary: 46 90% 59%; /* #F4C93B */
+  --primary-foreground: 154 75% 7%;
+  --accent-pink: 339 80% 58%; /* #D94F8C */
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  background-color: #062C1B;
+  color: #F4F1EA;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100vh;
+  color: #F4F1EA;
+  background: 
+    radial-gradient(circle at 50% 0%, rgba(244, 201, 59, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 100% 50%, rgba(217, 79, 140, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(10, 61, 38, 0.5) 0%, transparent 50%),
+    #062C1B;
+  background-attachment: fixed;
+}
+
+.font-syne {
+  font-family: 'Syne', sans-serif;
+}
+
+.font-mono {
+  font-family: 'Space Mono', monospace;
+}
+
+.font-sans {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* HH Goa Cyber Grid Pattern */
+.bg-goa-grid {
+  background-image: 
+    linear-gradient(to right, rgba(244, 201, 59, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(244, 201, 59, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Glowing Gold Button */
+.glow-gold {
+  box-shadow: 0 0 24px -4px rgba(244, 201, 59, 0.4);
+}
+
+.glow-pink {
+  box-shadow: 0 0 24px -4px rgba(217, 79, 140, 0.5);
+}
+
+/* Glassmorphic card styling */
+.glass-panel {
+  background: rgba(9, 56, 35, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(244, 201, 59, 0.18);
+}
+
+.glass-panel-interactive {
+  background: rgba(9, 56, 35, 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(244, 201, 59, 0.18);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-interactive:hover {
+  border-color: rgba(244, 201, 59, 0.4);
+  box-shadow: 0 12px 32px -8px rgba(6, 44, 27, 0.6);
+}
+
+/* Custom Mobile Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #062C1B;
+}
+::-webkit-scrollbar-thumb {
+  background: #175B3B;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F4C93B;
+}

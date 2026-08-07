@@ -1,3 +1,4 @@
+import QRCode from "qrcode";
 import sharp, { type FitEnum, type OverlayOptions } from "sharp";
 import { TemplateConfig, type Box } from "@/config/template";
 import { loadOptionalAsset, loadOptionalFont } from "@/lib/assets";
@@ -8,6 +9,22 @@ const transparentPixel = { r: 0, g: 0, b: 0, alpha: 0 };
 
 function roundedMask(box: Box & { radius: number }) {
   return Buffer.from(`<svg width="${box.width}" height="${box.height}" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" rx="${box.radius}" ry="${box.radius}" fill="#fff"/></svg>`);
+}
+
+async function prepareQrBuffer(url: string, box: Box) {
+  const qrPng = await QRCode.toBuffer(url, {
+    type: "png",
+    width: box.width - 8,
+    margin: 1,
+    color: { dark: "#1E3D2B", light: "#FFFFFF" },
+  });
+  const containerSvg = `<svg width="${box.width}" height="${box.height}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100%" height="100%" rx="8" fill="#FFFFFF" stroke="#1E3D2B" stroke-width="2"/>
+  </svg>`;
+  return sharp(Buffer.from(containerSvg))
+    .composite([{ input: qrPng, top: 4, left: 4 }])
+    .png()
+    .toBuffer();
 }
 
 async function resizeAsset(asset: Buffer | undefined, width: number, height: number, fit: keyof FitEnum = "fill") {
@@ -74,6 +91,10 @@ export class ImageRenderer {
       for (const { value, textConfig } of [{ value: input.name, textConfig: config.name }, { value: input.role, textConfig: config.role }, { value: input.title, textConfig: config.title }]) {
         const svg = textSvg(value, textConfig, font);
         if (svg) layers.push({ input: Buffer.from(svg), top: textConfig.y, left: textConfig.x });
+      }
+      if (input.qrUrl && config.cardQr) {
+        const qrBuffer = await prepareQrBuffer(input.qrUrl, config.cardQr);
+        layers.push({ input: qrBuffer, left: config.cardQr.x, top: config.cardQr.y });
       }
       if (logo && config.logo) layers.push({ input: await resizeAsset(logo, config.logo.width, config.logo.height) as Buffer, left: config.logo.x, top: config.logo.y });
     }

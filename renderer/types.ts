@@ -10,6 +10,7 @@ export interface RenderInput {
   title?: string;
   transform?: PhotoTransform;
   format?: "png" | "jpeg";
+  qrUrl?: string;
 }
 
 export interface RenderResult { buffer: Buffer; contentType: "image/png" | "image/jpeg"; fileExtension: "png" | "jpg" }
