@@ -25,7 +25,9 @@ let segmenterPromise: Promise<SelfieSegmentation> | null = null;
 function getSegmenter() {
   if (!segmenterPromise) {
     segmenterPromise = import("@mediapipe/selfie_segmentation").then(async ({ SelfieSegmentation }) => {
-      const segmenter = new SelfieSegmentation({ locateFile: (file) => `/mediapipe/${file}` });
+      const segmenter = new SelfieSegmentation({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/${file}`
+      });
       segmenter.setOptions({ modelSelection: 0, selfieMode: false });
       await segmenter.initialize();
       return segmenter;
@@ -85,7 +87,10 @@ export function Generator() {
   const [positionY, setPositionY] = useState(0);
   const removalRequest = useRef(0);
   const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
-  const { register, handleSubmit, getValues, formState: { errors } } = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: { name: "", role: "", title: "" } });
+  const { register, handleSubmit, getValues, watch, formState: { errors } } = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: { name: "", role: "", title: "" } });
+  const watchName = watch("name");
+  const watchRole = watch("role");
+  const watchTitle = watch("title");
 
   const transformStyle = useMemo(() => {
     if (!imageAspectRatio) return undefined;
@@ -269,6 +274,62 @@ export function Generator() {
                   className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                   onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
+
+                {/* Live Text Overlay in Card Preview */}
+                <div className="absolute inset-0 pointer-events-none [container-type:size]">
+                  {watchName && (
+                    <div
+                      className="absolute font-black truncate"
+                      style={{
+                        left: `${(TemplateConfig.name.x / 420) * 100}%`,
+                        top: `${(TemplateConfig.name.y / 720) * 100}%`,
+                        width: `${(TemplateConfig.name.width / 420) * 100}%`,
+                        height: `${(TemplateConfig.name.height / 720) * 100}%`,
+                        fontSize: `${(TemplateConfig.name.fontSize / 420) * 100}cqw`,
+                        color: TemplateConfig.name.color,
+                        fontFamily: TemplateConfig.name.fontFamily,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {watchName}
+                    </div>
+                  )}
+                  {watchRole && (
+                    <div
+                      className="absolute font-bold truncate"
+                      style={{
+                        left: `${(TemplateConfig.role.x / 420) * 100}%`,
+                        top: `${(TemplateConfig.role.y / 720) * 100}%`,
+                        width: `${(TemplateConfig.role.width / 420) * 100}%`,
+                        height: `${(TemplateConfig.role.height / 720) * 100}%`,
+                        fontSize: `${(TemplateConfig.role.fontSize / 420) * 100}cqw`,
+                        color: TemplateConfig.role.color,
+                        fontFamily: TemplateConfig.role.fontFamily,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {watchRole}
+                    </div>
+                  )}
+                  {watchTitle && (
+                    <div
+                      className="absolute font-bold truncate"
+                      style={{
+                        left: `${(TemplateConfig.title.x / 420) * 100}%`,
+                        top: `${(TemplateConfig.title.y / 720) * 100}%`,
+                        width: `${(TemplateConfig.title.width / 420) * 100}%`,
+                        height: `${(TemplateConfig.title.height / 720) * 100}%`,
+                        fontSize: `${(TemplateConfig.title.fontSize / 420) * 100}cqw`,
+                        color: TemplateConfig.title.color,
+                        fontFamily: TemplateConfig.title.fontFamily,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {watchTitle}
+                    </div>
+                  )}
+                </div>
+
                 {!previewUrl && (
                   <div className="absolute inset-x-8 top-[42%] rounded-xl bg-[#1e3d2b]/85 px-3 py-2 text-center text-xs font-semibold text-[#f4c93b]">
                     Your background-free photo will appear here

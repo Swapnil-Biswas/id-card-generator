@@ -1,5 +1,7 @@
 "use server";
 
+process.env.FONTCONFIG_PATH = process.cwd();
+
 import { ImageRenderer } from "@/renderer/image-renderer";
 import type { GeneratorMode } from "@/renderer/types";
 import sharp from "sharp";
