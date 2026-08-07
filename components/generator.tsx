@@ -7,7 +7,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { Results, SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 import { generateImageAction, normalizePhotoForSegmentationAction } from "@/app/actions";
-import { GoaBeachHero } from "@/components/goa-beach-hero";
 import { ImageUploader } from "@/components/image-uploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -301,9 +300,6 @@ export function Generator() {
             BUILD · SHIP · LAUNCH · GOA INDIA 2026
           </p>
         </div>
-
-        {/* Goa Beach Sunset Illustration Hero */}
-        <GoaBeachHero />
 
         {/* Generator Workspace Grid */}
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(380px,0.85fr)] lg:items-start">

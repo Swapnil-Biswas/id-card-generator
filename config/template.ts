@@ -41,7 +41,7 @@ export const TemplateConfig: TemplateDefinition = {
     background: "background.png",
   },
   photo: { x: 140, y: 225, width: 800, height: 800, radius: 400 },
-  cardPhoto: { x: 0, y: 155, width: 420, height: 410, radius: 0 },
+  cardPhoto: { x: 0, y: 192, width: 420, height: 370, radius: 0 },
   cardQr: { x: 18, y: 622, width: 76, height: 76 },
   name: { x: 100, y: 624, width: 304, height: 40, fontSize: 32, minFontSize: 12, color: "#062C1B", align: "left", fontFamily: "Arial Black", fontWeight: 900, maxLines: 1 },
   role: { x: 105, y: 665, width: 295, height: 18, fontSize: 11, minFontSize: 8, color: "#184A2C", align: "left", fontFamily: "Courier New", fontWeight: 700, maxLines: 1 },

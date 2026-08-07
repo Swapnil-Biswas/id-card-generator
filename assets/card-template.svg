@@ -11,7 +11,7 @@
   </defs>
 
   <!-- Card Background -->
-  <rect width="420" height="720" rx="0" fill="#062C1B"/>
+  <rect width="420" height="720" fill="#062C1B"/>
   <rect width="420" height="720" fill="url(#grid)"/>
 
   <!-- Outer Border Frame -->
@@ -19,38 +19,37 @@
   <rect x="14" y="14" width="392" height="692" fill="none" stroke="#F4C93B" stroke-width="0.5" stroke-dasharray="4 4" stroke-opacity="0.2"/>
 
   <!-- Top Header Bar -->
-  <text x="24" y="32" fill="#8EB89B" font-family="'Space Mono', 'Courier New', monospace" font-size="9" letter-spacing="2">HACKER HOUSE GOA · OFFICIAL BUILDER ID</text>
-  <text x="396" y="32" fill="#F4C93B" font-family="'Space Mono', 'Courier New', monospace" font-size="9" letter-spacing="1" text-anchor="end">2026</text>
+  <text x="24" y="32" fill="#8EB89B" font-family="'Space Mono', monospace" font-size="9" letter-spacing="2">HACKER HOUSE GOA · OFFICIAL BUILDER ID</text>
+  <text x="396" y="32" fill="#F4C93B" font-family="'Space Mono', monospace" font-size="9" letter-spacing="1" text-anchor="end">2026</text>
   <line x1="24" y1="40" x2="396" y2="40" stroke="#F4C93B" stroke-width="1" stroke-opacity="0.3"/>
 
-  <!-- Studio Badge -->
+  <!-- 2:47 PM STUDIO Badge (Y = 48 to 70) -->
   <g transform="translate(24, 48)">
-    <rect width="140" height="26" rx="13" fill="#F4C93B"/>
-    <circle cx="15" cy="13" r="9" fill="#062C1B"/>
-    <text x="15" y="16.5" fill="#F4C93B" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="10" font-weight="900">247</text>
-    <text x="32" y="16.5" fill="#062C1B" font-family="'Space Mono', monospace" font-size="9" font-weight="700" letter-spacing="0.5">2:47 PM STUDIO</text>
+    <rect width="132" height="22" rx="11" fill="#F4C93B"/>
+    <circle cx="12" cy="11" r="7" fill="#062C1B"/>
+    <text x="12" y="14" fill="#F4C93B" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="8" font-weight="900">247</text>
+    <text x="27" y="14.5" fill="#062C1B" font-family="'Space Mono', monospace" font-size="8.5" font-weight="700" letter-spacing="0.5">2:47 PM STUDIO</text>
   </g>
 
-  <!-- Big Hero Title -->
-  <g transform="translate(24, 92)">
-    <text y="38" fill="#F4C93B" font-family="Impact, 'Arial Black', sans-serif" font-size="46" letter-spacing="1.5">HACKER</text>
-    <text y="78" fill="#F4C93B" font-family="Impact, 'Arial Black', sans-serif" font-size="46" letter-spacing="1.5">HOUSE</text>
-    
-    <!-- Pink Goa Badge -->
-    <g transform="translate(182, 42) rotate(-3)">
-      <rect width="84" height="28" rx="7" fill="url(#pink-grad)"/>
-      <text x="42" y="20" fill="#F4C93B" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="19" letter-spacing="2">गोवा</text>
-    </g>
-
-    <text y="104" fill="#F4F1EA" font-family="'Space Mono', monospace" font-size="11" font-weight="700" letter-spacing="1">GOA, INDIA · 28–31 OCT 2026</text>
-    <line x1="0" y1="112" x2="372" y2="112" stroke="#F4C93B" stroke-width="1.5"/>
+  <!-- Big Hero Title Header (Y = 78 to 175) -->
+  <text x="24" y="116" fill="#F4C93B" font-family="Impact, 'Arial Black', sans-serif" font-size="42" letter-spacing="1.5">HACKER</text>
+  <text x="24" y="156" fill="#F4C93B" font-family="Impact, 'Arial Black', sans-serif" font-size="42" letter-spacing="1.5">HOUSE</text>
+  
+  <!-- Pink Goa Badge (Positioned beside HOUSE with no overlap) -->
+  <g transform="translate(205, 126) rotate(-3)">
+    <rect width="76" height="26" rx="6" fill="url(#pink-grad)"/>
+    <text x="38" y="18.5" fill="#F4C93B" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="17" letter-spacing="1.5">गोवा</text>
   </g>
+
+  <!-- Telemetry Date Subtitle -->
+  <text x="24" y="180" fill="#F4F1EA" font-family="'Space Mono', monospace" font-size="10" font-weight="700" letter-spacing="1">GOA, INDIA · 28–31 OCT 2026</text>
+  <line x1="24" y1="188" x2="396" y2="188" stroke="#F4C93B" stroke-width="1.5"/>
 
   <!-- Goa Beach Palm Silhouette Watermark -->
-  <g opacity="0.10" fill="#F4C93B">
-    <path d="M 28 220 C 35 180, 50 160, 65 140 C 45 145, 30 155, 20 170 Z" />
-    <path d="M 65 140 C 85 130, 105 135, 120 150 C 95 150, 75 145, 65 140 Z" />
-    <path d="M 390 220 C 383 180, 368 160, 353 140 C 373 145, 388 155, 398 170 Z" />
-    <path d="M 353 140 C 333 130, 313 135, 298 150 C 323 150, 343 145, 353 140 Z" />
+  <g opacity="0.08" fill="#F4C93B">
+    <path d="M 28 240 C 35 200, 50 180, 65 160 C 45 165, 30 175, 20 190 Z" />
+    <path d="M 65 160 C 85 150, 105 155, 120 170 C 95 170, 75 165, 65 160 Z" />
+    <path d="M 390 240 C 383 200, 368 180, 353 160 C 373 165, 388 175, 398 190 Z" />
+    <path d="M 353 160 C 333 150, 313 155, 298 170 C 323 170, 343 165, 353 160 Z" />
   </g>
 </svg>
