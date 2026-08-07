@@ -1,64 +1,71 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="420" height="720" viewBox="0 0 420 720">
   <defs>
-    <!-- Cyber Grid Pattern -->
-    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#F4C93B" stroke-width="1" stroke-opacity="0.07"/>
+    <!-- Background Grid Pattern -->
+    <pattern id="grid" width="90" height="39" patternUnits="userSpaceOnUse">
+      <path d="M 90 0 L 0 0 0 39" fill="none" stroke="#F4C93B" stroke-width="1" stroke-opacity="0.05"/>
     </pattern>
 
     <linearGradient id="pink-grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#D94F8C"/>
       <stop offset="100%" stop-color="#FF2A85"/>
     </linearGradient>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Anton&amp;family=Archivo+Black&amp;family=Space+Mono:wght@400;700&amp;display=swap');
+      .watermark { font-family: 'Space Mono', monospace; font-size: 11px; fill: #F4C93B; fill-opacity: 0.08; }
+      .credit-txt { font-family: 'Space Mono', monospace; font-size: 10px; fill: #A8C9B0; letter-spacing: 2px; }
+      .badge-b { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; fill: #1E3D2B; }
+      .badge-span { font-family: 'Space Mono', monospace; font-size: 7px; fill: #4A3F1A; letter-spacing: 0.5px; }
+      .head-h1 { font-family: 'Anton', 'Arial Black', sans-serif; font-size: 52px; fill: #F4C93B; letter-spacing: 1px; }
+      .head-goa { font-family: 'Anton', 'Arial Black', sans-serif; font-size: 20px; fill: #F4C93B; letter-spacing: 2px; }
+      .head-years { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; fill: #F2EDE0; letter-spacing: 1px; }
+    </style>
   </defs>
 
-  <!-- Card Background -->
-  <rect width="420" height="720" fill="#062C1B"/>
+  <!-- Card Background (#1e3d2b) -->
+  <rect width="420" height="720" fill="#1E3D2B"/>
   <rect width="420" height="720" fill="url(#grid)"/>
 
-  <!-- Outer Border Frame -->
-  <rect x="10" y="10" width="400" height="700" fill="none" stroke="#F4C93B" stroke-width="1.5" stroke-opacity="0.25"/>
-  <rect x="14" y="14" width="392" height="692" fill="none" stroke="#F4C93B" stroke-width="0.5" stroke-dasharray="4 4" stroke-opacity="0.2"/>
+  <!-- Repeating Background Watermark Text -->
+  <text x="20" y="32" class="watermark">HACKER HOUSE GOA 2026 BUILD SHIP LAUNCH</text>
+  <text x="20" y="48" class="watermark">28 31 OCT GOA INDIA HACKER HOUSE GOA</text>
+  <text x="20" y="64" class="watermark">BUILD SHIP LAUNCH HACKER HOUSE GOA 2026</text>
 
-  <!-- Top-Right Concentric Arches (Reference Style) -->
-  <g stroke="#F4C93B" stroke-width="12" fill="none" opacity="0.25" transform="translate(360, 20)">
-    <circle cx="60" cy="40" r="110"/>
-    <circle cx="60" cy="40" r="80" stroke="#D94F8C"/>
-    <circle cx="60" cy="40" r="50"/>
+  <!-- Card Border (3px solid #f4c93b) -->
+  <rect x="1.5" y="1.5" width="417" height="717" rx="26" fill="none" stroke="#F4C93B" stroke-width="3"/>
+
+  <!-- Top Credit -->
+  <text x="210" y="24" class="credit-txt" text-anchor="middle">HACKER HOUSE GOA · BUILDER ID</text>
+
+  <!-- Badge Top Left -->
+  <g transform="translate(24, 40)">
+    <rect width="145" height="28" rx="14" fill="#F4C93B"/>
+    <circle cx="14" cy="14" r="11" fill="#D94F8C"/>
+    <text x="14" y="18" fill="#FFFFFF" text-anchor="middle" font-family="'Archivo Black', sans-serif" font-size="12" font-weight="900">H</text>
+    <text x="32" y="14" class="badge-b">2:47 PM Studio</text>
+    <text x="32" y="23" class="badge-span">HACKER HOUSE GOA</text>
   </g>
 
-  <!-- Center Concentric Target Rings Behind Photo Cutout -->
-  <g stroke="#F4C93B" fill="none" transform="translate(210, 360)">
-    <circle cx="0" cy="0" r="165" stroke-width="18" stroke-opacity="0.12"/>
-    <circle cx="0" cy="0" r="125" stroke-width="14" stroke-opacity="0.16"/>
-    <circle cx="0" cy="0" r="85" stroke-width="10" stroke="#D94F8C" stroke-opacity="0.22"/>
-    <circle cx="0" cy="0" r="45" stroke-width="6" stroke-opacity="0.25"/>
+  <!-- Concentric Target Rings Top Right -->
+  <g transform="translate(390, 190)" opacity="0.9">
+    <circle cx="0" cy="0" r="120" fill="none" stroke="#F4C93B" stroke-width="18"/>
+    <circle cx="0" cy="0" r="80" fill="none" stroke="#D94F8C" stroke-width="14"/>
+    <circle cx="0" cy="0" r="40" fill="none" stroke="#F4C93B" stroke-width="10"/>
   </g>
 
-  <!-- Top Header Bar -->
-  <text x="24" y="30" fill="#8EB89B" font-family="'Space Mono', monospace" font-size="8.5" letter-spacing="2">HACKER HOUSE GOA · BUILDER PASS</text>
-  <text x="396" y="30" fill="#F4C93B" font-family="'Space Mono', monospace" font-size="8.5" letter-spacing="1" text-anchor="end">2026</text>
-  <line x1="24" y1="36" x2="396" y2="36" stroke="#F4C93B" stroke-width="1" stroke-opacity="0.3"/>
+  <!-- Heading Section -->
+  <g transform="translate(26, 142)">
+    <text x="0" y="0" class="head-h1">HACKER</text>
+    <text x="0" y="44" class="head-h1">HOUSE</text>
 
-  <!-- 2:47 PM STUDIO Badge -->
-  <g transform="translate(24, 44)">
-    <rect width="130" height="20" rx="10" fill="#F4C93B"/>
-    <circle cx="11" cy="10" r="6.5" fill="#062C1B"/>
-    <text x="11" y="13" fill="#F4C93B" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="7.5" font-weight="900">247</text>
-    <text x="25" y="13" fill="#062C1B" font-family="'Space Mono', monospace" font-size="8" font-weight="700" letter-spacing="0.5">2:47 PM STUDIO</text>
-  </g>
-
-  <!-- Top Stacked Header (Reference Style: TEAM / CREATIVE / HACKER / HOUSE) -->
-  <g transform="translate(24, 72)">
-    <text y="34" fill="#F4C93B" font-family="Impact, 'Arial Black', sans-serif" font-size="38" letter-spacing="1.5">HACKER</text>
-    <text y="70" fill="#F4C93B" font-family="Impact, 'Arial Black', sans-serif" font-size="38" letter-spacing="1.5">HOUSE</text>
-    
     <!-- Pink Goa Badge -->
-    <g transform="translate(190, 42) rotate(-3)">
-      <rect width="74" height="25" rx="6" fill="url(#pink-grad)"/>
-      <text x="37" y="17.5" fill="#F4C93B" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="16" letter-spacing="1.5">गोवा</text>
+    <g transform="translate(195, 20) rotate(-2)">
+      <rect width="72" height="26" rx="6" fill="#D94F8C"/>
+      <text x="36" y="19" class="head-goa" text-anchor="middle">गोवा</text>
     </g>
 
-    <text y="92" fill="#F4F1EA" font-family="'Space Mono', monospace" font-size="9.5" font-weight="700" letter-spacing="1">GOA, INDIA · 28–31 OCT 2026</text>
-    <line x1="0" y1="100" x2="372" y2="100" stroke="#F4C93B" stroke-width="1.5"/>
+    <!-- Years & Underline -->
+    <text x="0" y="78" class="head-years">GOA, INDIA · 28–31 OCT 2026</text>
+    <line x1="0" y1="84" x2="275" y2="84" stroke="#F4C93B" stroke-width="2"/>
   </g>
 </svg>

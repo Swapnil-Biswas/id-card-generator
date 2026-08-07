@@ -456,12 +456,14 @@ export function Generator() {
                           width: `${((TemplateConfig.cardPhoto ?? TemplateConfig.photo).width / (TemplateConfig.cardCanvas ?? TemplateConfig.canvas).width) * 100}%`,
                           height: `${((TemplateConfig.cardPhoto ?? TemplateConfig.photo).height / (TemplateConfig.cardCanvas ?? TemplateConfig.canvas).height) * 100}%`,
                           borderRadius: (TemplateConfig.cardPhoto ?? TemplateConfig.photo).radius > 0 ? "50%" : "0%",
+                          WebkitMaskImage: "linear-gradient(to bottom, transparent 0, #000 130px)",
+                          maskImage: "linear-gradient(to bottom, transparent 0, #000 130px)",
                         }}
                       >
                         <img
                           src={foregroundPreviewUrl ?? previewUrl}
                           alt="Photo cutout preview"
-                          className="h-full w-full object-contain object-top"
+                          className="h-full w-full object-cover object-top"
                           style={transformStyle}
                         />
                       </div>

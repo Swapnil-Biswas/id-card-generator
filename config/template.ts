@@ -31,8 +31,8 @@ export interface TemplateDefinition {
  * All dimensions are based on the template's native canvas size.
  */
 export const TemplateConfig: TemplateDefinition = {
-  canvas: { width: 1080, height: 1350, background: "#062C1B" },
-  cardCanvas: { width: 420, height: 720, background: "#062C1B" },
+  canvas: { width: 1080, height: 1350, background: "#1E3D2B" },
+  cardCanvas: { width: 420, height: 720, background: "#1E3D2B" },
   files: {
     frame: "frame.png",
     cardTemplate: "card-template.svg",
@@ -41,11 +41,11 @@ export const TemplateConfig: TemplateDefinition = {
     background: "background.png",
   },
   photo: { x: 140, y: 225, width: 800, height: 800, radius: 400 },
-  cardPhoto: { x: 0, y: 175, width: 420, height: 385, radius: 0 },
-  cardQr: { x: 18, y: 618, width: 78, height: 78 },
-  name: { x: 104, y: 618, width: 298, height: 42, fontSize: 28, minFontSize: 10, color: "#062C1B", align: "left", fontFamily: "Arial Black", fontWeight: 900, maxLines: 1 },
-  role: { x: 105, y: 663, width: 295, height: 18, fontSize: 11, minFontSize: 8, color: "#184A2C", align: "left", fontFamily: "Courier New", fontWeight: 700, maxLines: 1 },
-  title: { x: 105, y: 681, width: 295, height: 16, fontSize: 10, minFontSize: 8, color: "#4A3F1A", align: "left", fontFamily: "Courier New", fontWeight: 700, maxLines: 1 },
+  cardPhoto: { x: 0, y: 130, width: 420, height: 590, radius: 0 },
+  cardQr: { x: 315, y: 618, width: 78, height: 78 },
+  name: { x: 26, y: 615, width: 280, height: 58, fontSize: 44, minFontSize: 12, color: "#1E3D2B", align: "left", fontFamily: "Archivo Black", fontWeight: 900, maxLines: 1 },
+  role: { x: 26, y: 672, width: 280, height: 18, fontSize: 11, minFontSize: 8, color: "#4A3F1A", align: "left", fontFamily: "Space Mono", fontWeight: 700, maxLines: 1 },
+  title: { x: 26, y: 690, width: 280, height: 16, fontSize: 10, minFontSize: 8, color: "#4A3F1A", align: "left", fontFamily: "Space Mono", fontWeight: 700, maxLines: 1 },
   logo: undefined,
 };
 
