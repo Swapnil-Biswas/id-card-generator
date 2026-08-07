@@ -16,19 +16,19 @@ async function prepareQrBuffer(url: string, box: Box) {
     type: "png",
     width: box.width - 8,
     margin: 1,
-    color: { dark: "#1E3D2B", light: "#FFFFFF" },
+    color: { dark: "#062C1B", light: "#FFFFFF" },
   });
   const containerSvg = `<svg width="${box.width}" height="${box.height}" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100%" height="100%" rx="8" fill="#FFFFFF" stroke="#1E3D2B" stroke-width="2"/>
+    <rect width="100%" height="100%" rx="8" fill="#FFFFFF" stroke="#062C1B" stroke-width="2"/>
   </svg>`;
   return sharp(Buffer.from(containerSvg))
     .composite([{ input: qrPng, top: 4, left: 4 }])
-    .png()
+    .png({ compressionLevel: 3 })
     .toBuffer();
 }
 
 async function resizeAsset(asset: Buffer | undefined, width: number, height: number, fit: keyof FitEnum = "fill") {
-  return asset ? sharp(asset, { animated: false }).resize(width, height, { fit }).png().toBuffer() : undefined;
+  return asset ? sharp(asset, { animated: false }).resize(width, height, { fit }).png({ compressionLevel: 3 }).toBuffer() : undefined;
 }
 
 async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transform?: RenderInput["transform"]) {
@@ -38,8 +38,6 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
   
   let width = metadata.width;
   let height = metadata.height;
-  // If the image orientation metadata suggests the image is rotated 90 or 270 degrees,
-  // the width and height will be swapped after calling .rotate().
   if (metadata.orientation && metadata.orientation >= 5) {
     width = metadata.height;
     height = metadata.width;
@@ -50,17 +48,21 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
   let result: Buffer;
 
   if (!hasManualPosition) {
-    result = await normalized.resize(box.width, box.height, { fit: "cover", position: "attention", kernel: sharp.kernel.lanczos3 }).png().toBuffer();
+    result = await normalized.resize(box.width, box.height, { fit: "cover", position: "attention", kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 3 }).toBuffer();
   } else {
     const scale = Math.max(box.width / width, box.height / height) * zoom;
     const scaledWidth = Math.max(box.width, Math.ceil(width * scale));
     const scaledHeight = Math.max(box.height, Math.ceil(height * scale));
-    const positioned = await normalized.resize(scaledWidth, scaledHeight, { fit: "fill", kernel: sharp.kernel.lanczos3 }).png().toBuffer();
+    const positioned = await normalized.resize(scaledWidth, scaledHeight, { fit: "fill", kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 3 }).toBuffer();
     const horizontal = Math.min(1, Math.max(0, 0.5 + (transform?.x ?? 0) / 2));
     const vertical = Math.min(1, Math.max(0, 0.5 + (transform?.y ?? 0) / 2));
-    result = await sharp(positioned).extract({ left: Math.round((scaledWidth - box.width) * horizontal), top: Math.round((scaledHeight - box.height) * vertical), width: box.width, height: box.height }).png().toBuffer();
+    result = await sharp(positioned).extract({ left: Math.round((scaledWidth - box.width) * horizontal), top: Math.round((scaledHeight - box.height) * vertical), width: box.width, height: box.height }).png({ compressionLevel: 3 }).toBuffer();
   }
-  return sharp(result).composite([{ input: roundedMask(box), blend: "dest-in" }]).png().toBuffer();
+
+  if (box.radius <= 0) {
+    return result;
+  }
+  return sharp(result).composite([{ input: roundedMask(box), blend: "dest-in" }]).png({ compressionLevel: 3 }).toBuffer();
 }
 
 /** Composites a user photo, configurable assets, and configurable SVG typography. */
@@ -78,15 +80,18 @@ export class ImageRenderer {
       loadOptionalAsset(config.files.background),
       loadOptionalFont(config.name.fontFile),
     ]);
-    const photo = await preparePhoto(input.photo, photoBox, input.transform);
-    const template = input.mode === "card" ? cardTemplate : backgroundAsset;
+
+    const [photo, preparedTemplate, preparedOverlay] = await Promise.all([
+      preparePhoto(input.photo, photoBox, input.transform),
+      resizeAsset(input.mode === "card" ? cardTemplate : backgroundAsset, width, height),
+      input.mode === "card" ? resizeAsset(cardOverlay, width, height) : Promise.resolve(undefined),
+    ]);
+
     const layers: OverlayOptions[] = [];
-    const preparedTemplate = await resizeAsset(template, width, height);
     if (preparedTemplate) layers.push({ input: preparedTemplate });
     layers.push({ input: photo, left: photoBox.x, top: photoBox.y });
 
     if (input.mode === "card") {
-      const preparedOverlay = await resizeAsset(cardOverlay, width, height);
       if (preparedOverlay) layers.push({ input: preparedOverlay });
       for (const { value, textConfig } of [{ value: input.name, textConfig: config.name }, { value: input.role, textConfig: config.role }, { value: input.title, textConfig: config.title }]) {
         const svg = textSvg(value, textConfig, font);
@@ -104,8 +109,8 @@ export class ImageRenderer {
     }
 
     let output = sharp({ create: { width, height, channels: 4, background: input.mode === "frame" ? transparentPixel : background } }).composite(layers);
-    if (input.format === "jpeg") output = output.flatten({ background: background }).jpeg({ quality: 94, chromaSubsampling: "4:4:4", mozjpeg: true });
-    else output = output.png({ compressionLevel: 8, adaptiveFiltering: true });
+    if (input.format === "jpeg") output = output.flatten({ background: background }).jpeg({ quality: 90, chromaSubsampling: "4:4:4" });
+    else output = output.png({ compressionLevel: 3 });
     return { buffer: await output.toBuffer(), contentType: input.format === "jpeg" ? "image/jpeg" : "image/png", fileExtension: input.format === "jpeg" ? "jpg" : "png" };
   }
 }
