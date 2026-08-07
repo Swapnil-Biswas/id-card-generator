@@ -438,7 +438,9 @@ export function Generator() {
                 }`}
               >
                 {generatedImage ? (
-                  <img src={generatedImage} alt={generatedLabel} className="h-full w-full object-contain" />
+                  <div className="relative h-full w-full">
+                    <img src={generatedImage} alt={generatedLabel} className="h-full w-full object-contain" />
+                  </div>
                 ) : mode === "card" ? (
                   <>
                     <img

@@ -39,10 +39,11 @@ export function textSvg(value: string | undefined, config: TextConfig, fontData?
     }
     const anchor = config.align === "left" ? "start" : config.align === "right" ? "end" : "middle";
     const x = config.align === "left" ? 0 : config.align === "right" ? config.width : config.width / 2;
+    const baselineY = Math.round(fontSize * 0.82);
 
     return `<svg width="${config.width}" height="${config.height}" viewBox="0 0 ${config.width} ${config.height}" xmlns="http://www.w3.org/2000/svg">
       <style>${face}</style>
-      <text x="${x}" y="50%" dominant-baseline="central" text-anchor="${anchor}" fill="${config.color}" font-family="${fontStack}" font-size="${fontSize}" font-weight="${config.fontWeight ?? 800}">
+      <text x="${x}" y="${baselineY}" text-anchor="${anchor}" fill="${config.color}" font-family="${fontStack}" font-size="${fontSize}" font-weight="${config.fontWeight ?? 800}">
         ${escapeXml(rawText)}
       </text>
     </svg>`;
