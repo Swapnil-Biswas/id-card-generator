@@ -583,8 +583,8 @@ export function Generator() {
 
               {/* Canvas Preview Container */}
               <div
-                className={`relative overflow-hidden rounded-2xl border border-[#F4C93B]/30 bg-[#015635] shadow-inner ${
-                  mode === "card" ? "aspect-[7/12]" : "aspect-[1024/683]"
+                className={`relative overflow-hidden rounded-2xl border border-[#F4C93B]/30 bg-[#075F3F] shadow-inner ${
+                  mode === "card" ? "aspect-[7/12]" : "aspect-[1536/1024]"
                 }`}
               >
                 {generatedImage ? (
@@ -708,10 +708,10 @@ export function Generator() {
                       <div
                         className="absolute overflow-hidden"
                         style={{
-                          left: "10.4%",
-                          top: "25.8%",
-                          width: "79.2%",
-                          height: "58.4%",
+                          left: "10.5%",
+                          top: "25.5%",
+                          width: "79%",
+                          height: "55%",
                         }}
                       >
                         <img
