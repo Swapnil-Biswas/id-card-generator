@@ -88,64 +88,61 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
   let width = metadata.width;
   let height = metadata.height;
   if (metadata.orientation && metadata.orientation >= 5) {
-    width = metadata.height;
-    height = metadata.width;
+    [width, height] = [height, width];
   }
 
-  const zoom = Math.min(3, Math.max(0.3, transform?.zoom ?? 1));
-  const hasManualPosition = Math.abs(zoom - 1) > 0.01 || Math.abs(transform?.x ?? 0) > 0.01 || Math.abs(transform?.y ?? 0) > 0.01;
-  let result: Buffer;
+  const zoom = Math.max(0.3, transform?.zoom ?? 1.0);
+  const positionX = Math.max(-1, Math.min(1, transform?.positionX ?? 0));
+  const positionY = Math.max(-1, Math.min(1, transform?.positionY ?? 0));
 
-  if (!hasManualPosition) {
-    result = await normalized.resize(box.width, box.height, { fit: "cover", position: "center", background: { r: 0, g: 0, b: 0, alpha: 0 }, kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 1 }).toBuffer();
-    if (applyTopFade) {
-      result = await applyBottomFade(result, box.width, box.height);
-    }
+  const imageAspectRatio = width / height;
+  const boxRatio = box.width / box.height;
+
+  let scaledWidth: number;
+  let scaledHeight: number;
+
+  if (imageAspectRatio > boxRatio) {
+    scaledHeight = Math.round(box.height * zoom);
+    scaledWidth = Math.round(scaledHeight * imageAspectRatio);
   } else {
-    const scale = Math.max(box.width / width, box.height / height) * zoom;
-    const scaledWidth = Math.ceil(width * scale);
-    const scaledHeight = Math.ceil(height * scale);
-    const positioned = await normalized.resize(scaledWidth, scaledHeight, { fit: "fill", kernel: sharp.kernel.lanczos3 }).png({ compressionLevel: 1 }).toBuffer();
-    const transformX = transform?.x ?? 0;
-    const transformY = transform?.y ?? 0;
+    scaledWidth = Math.round(box.width * zoom);
+    scaledHeight = Math.round(scaledWidth / imageAspectRatio);
+  }
 
-    const maxDeltaX = Math.abs(box.width - scaledWidth) / 2;
-    const maxDeltaY = Math.abs(box.height - scaledHeight) / 2;
-    const shiftX = (box.width - scaledWidth) / 2 + maxDeltaX * transformX;
-    const shiftY = (box.height - scaledHeight) / 2 + maxDeltaY * transformY;
+  const overflowX = Math.max(0, scaledWidth - box.width);
+  const overflowY = Math.max(0, scaledHeight - box.height);
 
-    const srcLeft = Math.max(0, -shiftX);
-    const srcTop = Math.max(0, -shiftY);
-    const cropWidth = Math.min(scaledWidth - srcLeft, box.width - Math.max(0, shiftX));
-    const cropHeight = Math.min(scaledHeight - srcTop, box.height - Math.max(0, shiftY));
+  const tx = Math.round((overflowX * -positionX) / 2);
+  const ty = Math.round((overflowY * -positionY) / 2);
 
-    let cropped = await sharp(positioned)
-      .extract({
-        left: Math.round(srcLeft),
-        top: Math.round(srcTop),
-        width: Math.round(cropWidth),
-        height: Math.round(cropHeight)
-      })
-      .toBuffer();
+  const leftOffset = Math.round(Math.max(0, (box.width - scaledWidth) / 2) + Math.max(0, tx));
+  const topOffset = Math.round(Math.max(0, (box.height - scaledHeight) / 2) + Math.max(0, ty));
 
-    if (applyTopFade) {
-      cropped = await applyBottomFade(cropped, Math.round(cropWidth), Math.round(cropHeight));
-    }
+  const extractWidth = Math.min(width, Math.round(width / zoom));
+  const extractHeight = Math.min(height, Math.round(height / zoom));
 
-    const compositeLeft = Math.max(0, shiftX);
-    const compositeTop = Math.max(0, shiftY);
+  const maxExtractLeft = width - extractWidth;
+  const maxExtractTop = height - extractHeight;
 
-    result = await sharp({
-      create: {
-        width: box.width,
-        height: box.height,
-        channels: 4,
-        background: { r: 0, g: 0, b: 0, alpha: 0 }
-      }
-    })
-    .composite([{ input: cropped, left: Math.round(compositeLeft), top: Math.round(compositeTop) }])
+  const extractLeft = Math.round(Math.max(0, Math.min(maxExtractLeft, (maxExtractLeft / 2) + (positionX * maxExtractLeft / 2))));
+  const extractTop = Math.round(Math.max(0, Math.min(maxExtractTop, (maxExtractTop / 2) + (positionY * maxExtractTop / 2))));
+
+  const processedPhoto = await normalized
+    .extract({ left: extractLeft, top: extractTop, width: extractWidth, height: extractHeight })
+    .resize(scaledWidth, scaledHeight, { fit: "fill", kernel: sharp.kernel.lanczos3 })
     .png({ compressionLevel: 1 })
     .toBuffer();
+
+  const compositedPhoto = await sharp({
+    create: { width: box.width, height: box.height, channels: 4, background: transparentPixel },
+  })
+    .composite([{ input: processedPhoto, left: leftOffset, top: topOffset }])
+    .png({ compressionLevel: 1 })
+    .toBuffer();
+
+  let result = compositedPhoto;
+  if (transform?.removeBackground) {
+    result = await applyBottomFade(result, box.width, box.height);
   }
 
   const overlays: OverlayOptions[] = [];
@@ -166,10 +163,10 @@ async function preparePhoto(photo: Buffer, box: Box & { radius: number }, transf
 export class ImageRenderer {
   async render(input: RenderInput): Promise<RenderResult> {
     const config = TemplateConfig;
-    const rawCanvas = input.mode === "card" ? (config.cardCanvas ?? config.canvas) : config.canvas;
-    const rawPhotoBox = input.mode === "card" ? (config.cardPhoto ?? config.photo) : config.photo;
+    const rawCanvas = input.mode === "card" ? (config.cardCanvas ?? config.canvas) : input.mode === "frame" ? (config.frameCanvas ?? config.canvas) : config.canvas;
+    const rawPhotoBox = input.mode === "card" ? (config.cardPhoto ?? config.photo) : input.mode === "frame" ? (config.framePhoto ?? config.photo) : config.photo;
 
-    // Render cards at 2.5x High-DPI resolution for razor-sharp HD clarity
+    // Render cards at High-DPI resolution for razor-sharp HD clarity
     const SCALE = input.mode === "card" ? 2.5 : 1;
 
     const width = Math.round(rawCanvas.width * SCALE);
@@ -191,7 +188,7 @@ export class ImageRenderer {
       loadOptionalAsset(config.files.cardTemplate),
       loadOptionalAsset(config.files.cardOverlay ?? ""),
       loadOptionalAsset(config.files.logo),
-      loadOptionalAsset(config.files.background),
+      loadOptionalAsset(config.files.beachFrame ?? config.files.background),
       loadOptionalFont(config.name.fontFile),
     ]);
 

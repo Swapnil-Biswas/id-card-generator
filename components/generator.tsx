@@ -583,8 +583,9 @@ export function Generator() {
 
               {/* Canvas Preview Container */}
               <div
-                className={`relative overflow-hidden rounded-2xl border border-[#F4C93B]/30 bg-[#062C1B] shadow-inner ${mode === "card" ? "aspect-[7/12]" : "aspect-[4/5]"
-                  }`}
+                className={`relative overflow-hidden rounded-2xl border border-[#F4C93B]/30 bg-[#075F3F] shadow-inner ${
+                  mode === "card" ? "aspect-[7/12]" : "aspect-[1536/1024]"
+                }`}
               >
                 {generatedImage ? (
                   <div className="relative h-full w-full">
@@ -694,23 +695,48 @@ export function Generator() {
                       </div>
                     )}
                   </>
-                ) : previewUrl ? (
-                  <img
-                    src={previewUrl}
-                    alt="Photo preview"
-                    className="h-full w-full object-cover"
-                    style={{ transform: `scale(${zoom}) translate(${positionX * -16}%, ${positionY * -16}%)` }}
-                  />
                 ) : (
-                  <div className="absolute inset-0 grid place-items-center p-6 text-center">
-                    <div>
-                      <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-[#093823] border border-[#F4C93B]/30 text-[#F4C93B]">
-                        <Sparkles className="h-6 w-6" />
+                  /* 3D Beach Profile Frame Mode */
+                  <>
+                    <img
+                      src="/api/template?layer=beachFrame"
+                      alt="3D Beach Profile Poster"
+                      className="absolute inset-0 h-full w-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    />
+                    {previewUrl && (
+                      <div
+                        className="absolute overflow-hidden"
+                        style={{
+                          left: "10.5%",
+                          top: "25.5%",
+                          width: "79%",
+                          height: "55%",
+                        }}
+                      >
+                        <img
+                          src={foregroundPreviewUrl ?? previewUrl}
+                          alt="Photo preview inside 3D frame"
+                          className="h-full w-full object-cover object-center"
+                          style={transformStyle}
+                        />
                       </div>
-                      <p className="font-mono text-xs font-bold text-[#F4F1EA]">YOUR DESIGN APPEARS HERE</p>
-                      <p className="mt-1 font-mono text-[10px] text-[#8EB89B]">Upload a photo to start creating</p>
-                    </div>
-                  </div>
+                    )}
+                    <img
+                      src="/api/template?layer=frame"
+                      alt="3D Beach Frame Overlay"
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    />
+                    {!previewUrl && (
+                      <div className="absolute inset-x-12 top-[40%] rounded-2xl border border-[#F4C93B]/40 bg-[#062C1B]/90 p-4 text-center glass-panel z-10">
+                        <Sparkles className="mx-auto mb-2 h-6 w-6 text-[#F4C93B]" />
+                        <p className="font-mono text-xs font-bold text-[#F4C93B]">3D BEACH PROFILE FRAME</p>
+                        <p className="mt-1 font-mono text-[10px] text-[#8EB89B]">Upload a photo to fit inside the beach frame</p>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
