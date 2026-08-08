@@ -29,24 +29,24 @@ export interface TemplateDefinition {
 }
 
 /**
- * The configuration for Hacker House Goa ID cards and 3D Profile Frame.
+ * The configuration for Hacker House Goa ID cards and 3D Profile Frame (goa_beach.html).
  * All dimensions are based on native canvas sizes.
  */
 export const TemplateConfig: TemplateDefinition = {
   canvas: { width: 1080, height: 1350, background: "#1E3D2B" },
   cardCanvas: { width: 420, height: 720, background: "#1E3D2B" },
-  frameCanvas: { width: 1536, height: 1024, background: "#075F3F" },
+  frameCanvas: { width: 1536, height: 1024, background: "#006B43" },
   files: {
     frame: "frame.png",
     cardTemplate: "card-template.svg",
     cardOverlay: "card-overlay.svg",
     logo: "logo.png",
     background: "background.png",
-    beachFrame: "beac_profile_frame.jpg",
+    beachFrame: "beac_profile_frame.png",
   },
   photo: { x: 140, y: 225, width: 800, height: 800, radius: 400 },
   cardPhoto: { x: 0, y: 130, width: 420, height: 590, radius: 0 },
-  framePhoto: { x: 161, y: 261, width: 1214, height: 563, radius: 0 },
+  framePhoto: { x: 146, y: 276, width: 1244, height: 573, radius: 0 },
   cardQr: { x: 315, y: 618, width: 78, height: 78 },
   name: { x: 26, y: 615, width: 280, height: 58, fontSize: 44, minFontSize: 12, color: "#1E3D2B", align: "left", fontFamily: "Archivo Black", fontWeight: 900, maxLines: 1 },
   role: { x: 26, y: 672, width: 280, height: 18, fontSize: 11, minFontSize: 8, color: "#4A3F1A", align: "left", fontFamily: "Space Mono", fontWeight: 700, maxLines: 1 },

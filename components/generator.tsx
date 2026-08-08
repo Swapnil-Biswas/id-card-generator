@@ -708,10 +708,10 @@ export function Generator() {
                       <div
                         className="absolute overflow-hidden"
                         style={{
-                          left: "10.5%",
-                          top: "25.5%",
-                          width: "79%",
-                          height: "55%",
+                          left: "9.5%",
+                          top: "27%",
+                          width: "81%",
+                          height: "56%",
                         }}
                       >
                         <img
